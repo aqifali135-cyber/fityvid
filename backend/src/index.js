@@ -5,6 +5,7 @@ import videoRoutes from './routes/videoRoutes.js';
 import { healthHandler } from './controllers/downloadController.js';
 import { downloadVideo } from './controllers/videoController.js';
 import { videoInfoLimiter, downloadLimiter } from './middleware/rateLimit.js';
+import { checkYtDlp, getYtDlpVersion } from './utils/ytdlpRunner.js';
 
 const app = express();
 const PORT = process.env.PORT || 8787;
@@ -27,7 +28,13 @@ app.use((err, _req, res, _next) => {
   });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  const ready = await checkYtDlp();
   console.log(`FityVid API running on http://localhost:${PORT}`);
   console.log(`Video extractor: ${process.env.VIDEO_EXTRACTOR || 'yt-dlp'}`);
+  if (ready) {
+    console.log(`yt-dlp version: ${getYtDlpVersion() || 'unknown'}`);
+  } else {
+    console.warn('WARNING: yt-dlp is not available. Install yt-dlp on the server for video downloads.');
+  }
 });

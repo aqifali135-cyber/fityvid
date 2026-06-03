@@ -1,5 +1,11 @@
 import { validateVideoUrl } from '../utils/platformDetector.js';
-import { checkYtDlp, runYtDlp, spawnYtDlp } from '../utils/ytdlpRunner.js';
+import {
+  checkYtDlp,
+  runYtDlpWithYoutubeFallback,
+  spawnYtDlp,
+  buildDownloadArgs,
+  isYoutubeBotError,
+} from '../utils/ytdlpRunner.js';
 import {
   extractInstagramThumbnail,
   buildInstagramFormats,
@@ -220,7 +226,7 @@ export async function fetchVideoInfo(url) {
   }
 
   try {
-    const stdout = await runYtDlp(['-J', '--no-playlist', '--no-warnings', validation.url]);
+    const stdout = await runYtDlpWithYoutubeFallback(validation.url, validation.platform);
     const info = JSON.parse(stdout);
 
     if (info.is_live) {
@@ -271,6 +277,14 @@ export async function fetchVideoInfo(url) {
       return {
         success: false,
         message: 'Unable to fetch video details. Please try another public video link.',
+      };
+    }
+
+    if (validation.platform === 'youtube' && isYoutubeBotError(err.message)) {
+      return {
+        success: false,
+        message:
+          'YouTube could not be accessed from this server right now. Please try TikTok, Instagram, or Facebook, or try again later.',
       };
     }
 
@@ -336,17 +350,7 @@ export async function streamVideoDownload(videoUrl, formatId, title, ext, res, o
   const mergeFormat =
     formatId.includes('+') ? formatId : formatId;
 
-  const args = [
-    '-f',
-    mergeFormat,
-    '--merge-output-format',
-    'mp4',
-    '--no-playlist',
-    '--no-warnings',
-    '-o',
-    '-',
-    videoUrl,
-  ];
+  const args = buildDownloadArgs(mergeFormat, videoUrl, platform || '');
 
   const proc = spawnYtDlp(args);
   proc.stdout.pipe(res);

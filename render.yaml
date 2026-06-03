@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: fityvid-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VIDEO_EXTRACTOR
+        value: yt-dlp
+      - key: PORT
+        value: 8787

@@ -1,4 +1,5 @@
 import { validateDownloadUrl } from '../utils/validation.js';
+import { checkYtDlp, getYtDlpVersion } from '../utils/ytdlpRunner.js';
 
 export function validateUrlHandler(req, res) {
   const { url } = req.body || {};
@@ -19,6 +20,15 @@ export function validateUrlHandler(req, res) {
   });
 }
 
-export function healthHandler(_req, res) {
-  res.json({ success: true, service: 'FityVid API', platforms: ['youtube', 'facebook', 'tiktok', 'instagram'] });
+export async function healthHandler(_req, res) {
+  const ytDlpReady = await checkYtDlp();
+  res.json({
+    success: true,
+    service: 'FityVid API',
+    platforms: ['youtube', 'facebook', 'tiktok', 'instagram'],
+    ytDlp: {
+      ready: ytDlpReady,
+      version: getYtDlpVersion() || null,
+    },
+  });
 }

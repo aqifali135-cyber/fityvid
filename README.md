@@ -57,8 +57,10 @@ ffmpeg -version
 
 ### Hosting (Namecheap + backend)
 
-- Deploy **frontend** on Namecheap with `VITE_API_BASE_URL=https://your-backend.onrender.com`
+- Deploy **frontend** on Vercel with `VITE_API_BASE_URL=https://api.fityvid.com`
 - Deploy **backend** on Render, Railway, or a VPS where **yt-dlp** and **FFmpeg** are installed
+- Use `backend/Dockerfile` or `render.yaml` for one-click deploy with yt-dlp included
+- Check `https://your-api/api/health` — `ytDlp.ready` must be `true` for downloads to work
 - Instagram thumbnails are proxied via `/api/video/thumbnail` to avoid broken images
 - Instagram videos are merged with FFmpeg when video and audio are separate streams
 
