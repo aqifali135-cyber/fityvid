@@ -1,0 +1,117 @@
+.hashtag-form-wrapper {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.hashtag-form {
+  padding: 2rem;
+}
+
+.option-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.platform-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.option-card,
+.option-chip {
+  position: relative;
+  cursor: pointer;
+}
+
+.option-card input,
+.option-chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Platform buttons — light gradient */
+.platform-options .option-card span {
+  display: block;
+  padding: 0.85rem 1rem;
+  text-align: center;
+  font-weight: 600;
+  color: #111827;
+  border-radius: var(--radius);
+  border: 2px solid rgba(255, 182, 193, 0.4);
+  background-color: #fffafc;
+  background-image: linear-gradient(135deg, #ffe8f1 0%, #e8f4ff 50%, #f3e8ff 100%);
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.05);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    background 0.3s ease;
+}
+
+.platform-options .option-card:hover span {
+  background-image: linear-gradient(135deg, #ffd6e8 0%, #d6ebff 50%, #ebe0ff 100%);
+  border-color: rgba(196, 181, 253, 0.55);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(31, 41, 55, 0.1);
+}
+
+.platform-options .option-card.selected span {
+  background-image: linear-gradient(135deg, #ffc9dd 0%, #c5e3ff 50%, #dcc8ff 100%);
+  border-color: #c4b5fd;
+  color: #111827;
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 3px rgba(196, 181, 253, 0.3),
+    0 8px 22px rgba(236, 72, 153, 0.14);
+}
+
+.option-chip:hover span {
+  border-color: var(--cyan);
+}
+
+.option-chip span {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 2px solid var(--gray-200);
+  border-radius: 999px;
+  background: var(--white);
+  transition: all 0.2s ease;
+}
+
+.option-chip.selected span {
+  border-color: var(--pink);
+  background: linear-gradient(135deg, var(--peach), var(--pink-light));
+}
+
+.hashtag-form-tip {
+  margin: 1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--gray-400);
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .platform-options {
+    grid-template-columns: 1fr;
+  }
+
+  .hashtag-form {
+    padding: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .platform-options .option-card span {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .platform-options .option-card:hover span,
+  .platform-options .option-card.selected span {
+    transform: none;
+  }
+}

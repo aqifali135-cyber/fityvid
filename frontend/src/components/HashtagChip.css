@@ -1,0 +1,35 @@
+.hashtag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.5rem 0.4rem 0.85rem;
+  background: linear-gradient(135deg, var(--purple-light), var(--cyan-light));
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid var(--gray-200);
+}
+
+.hashtag-text {
+  color: var(--gray-800);
+}
+
+.hashtag-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: var(--white);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.hashtag-copy-btn:hover {
+  transform: scale(1.1);
+  background: var(--pink-light);
+}

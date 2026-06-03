@@ -1,0 +1,80 @@
+.logo-link,
+.logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.logo-link:hover {
+  text-decoration: none;
+}
+
+.logo-link:hover .fityvid-logo {
+  transform: scale(1.02);
+}
+
+.logo-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.logo-mark-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.logo-text {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--gray-800);
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.fityvid-logo {
+  display: block;
+  width: auto;
+  height: 44px;
+  max-width: 52px;
+  object-fit: contain;
+  object-position: center;
+  image-rendering: -webkit-optimize-contrast;
+  transition: transform 0.2s ease;
+}
+
+.fityvid-logo--nav {
+  height: 44px;
+  max-width: 52px;
+}
+
+.fityvid-logo--footer {
+  height: 40px;
+  max-width: 48px;
+}
+
+.fityvid-logo--hero {
+  height: 48px;
+  max-width: 56px;
+}
+
+@media (max-width: 480px) {
+  .fityvid-logo--nav {
+    height: 40px;
+    max-width: 46px;
+  }
+
+  .logo-text {
+    font-size: 1.15rem;
+  }
+
+  .logo-brand {
+    gap: 0.5rem;
+  }
+}

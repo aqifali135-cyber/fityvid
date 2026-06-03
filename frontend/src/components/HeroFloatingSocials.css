@@ -1,0 +1,250 @@
+/* Floating social decorations — hero only */
+
+.hero-floating-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.floating-social-icon {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: heroFloat 9s ease-in-out infinite;
+  will-change: transform;
+}
+
+.floating-social-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  filter: drop-shadow(0 8px 20px rgba(236, 72, 153, 0.18));
+  pointer-events: none;
+}
+
+/* Positions — adjust top/left/right/bottom here */
+.float-youtube {
+  left: 6%;
+  top: 14%;
+  animation-duration: 8s;
+  animation-delay: 0s;
+}
+
+.float-instagram {
+  left: 4%;
+  bottom: 18%;
+  animation-duration: 10s;
+  animation-delay: -2s;
+}
+
+.float-tiktok {
+  right: 6%;
+  top: 16%;
+  animation-duration: 9.5s;
+  animation-delay: -1s;
+}
+
+.float-facebook {
+  right: 4%;
+  bottom: 20%;
+  animation-duration: 11s;
+  animation-delay: -3s;
+}
+
+@keyframes heroFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+  66% {
+    transform: translateY(6px) rotate(-2deg);
+  }
+}
+
+@keyframes heroFloatAlt {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-14px) rotate(-3deg) scale(1.02);
+  }
+}
+
+.float-instagram {
+  animation-name: heroFloatAlt;
+}
+
+.float-tiktok {
+  animation-name: heroFloatAlt;
+  animation-duration: 10s;
+}
+
+/* Gradient bubbles behind icons */
+.hero-float-bubble {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: bubbleDrift 14s ease-in-out infinite;
+}
+
+.bubble-1 {
+  width: 120px;
+  height: 120px;
+  left: 2%;
+  top: 28%;
+  background: radial-gradient(circle, rgba(249, 168, 212, 0.45) 0%, transparent 70%);
+  animation-delay: 0s;
+}
+
+.bubble-2 {
+  width: 90px;
+  height: 90px;
+  left: 8%;
+  bottom: 12%;
+  background: radial-gradient(circle, rgba(196, 181, 253, 0.4) 0%, transparent 70%);
+  animation-delay: -4s;
+}
+
+.bubble-3 {
+  width: 110px;
+  height: 110px;
+  right: 3%;
+  top: 22%;
+  background: radial-gradient(circle, rgba(253, 164, 175, 0.42) 0%, transparent 70%);
+  animation-delay: -2s;
+}
+
+.bubble-4 {
+  width: 80px;
+  height: 80px;
+  right: 10%;
+  bottom: 15%;
+  background: radial-gradient(circle, rgba(147, 197, 253, 0.38) 0%, transparent 70%);
+  animation-delay: -6s;
+}
+
+@keyframes bubbleDrift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate(8px, -12px) scale(1.08);
+    opacity: 0.75;
+  }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .floating-social-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .float-youtube {
+    left: 2%;
+    top: 12%;
+  }
+
+  .float-instagram {
+    left: 1%;
+    bottom: 14%;
+  }
+
+  .float-tiktok {
+    right: 2%;
+    top: 14%;
+  }
+
+  .float-facebook {
+    right: 1%;
+    bottom: 16%;
+  }
+
+  .hero-float-bubble {
+    transform: scale(0.85);
+  }
+}
+
+/* Mobile — soft background, fewer visible */
+@media (max-width: 768px) {
+  .float-youtube,
+  .float-facebook,
+  .float-instagram,
+  .float-tiktok {
+    opacity: 0.4;
+    width: 44px;
+    height: 44px;
+  }
+
+  .float-youtube {
+    left: -2%;
+    top: 8%;
+  }
+
+  .float-instagram {
+    left: -4%;
+    bottom: 8%;
+  }
+
+  .float-tiktok {
+    right: -2%;
+    top: 10%;
+  }
+
+  .float-facebook {
+    right: -4%;
+    bottom: 10%;
+  }
+
+  .bubble-1,
+  .bubble-2,
+  .bubble-3,
+  .bubble-4 {
+    opacity: 0.35;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-social-icon {
+    display: none;
+  }
+
+  .hero-float-bubble {
+    opacity: 0.25;
+  }
+
+  .bubble-1 {
+    left: -10%;
+    top: 15%;
+  }
+
+  .bubble-3 {
+    right: -10%;
+    top: 20%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-social-icon,
+  .hero-float-bubble {
+    animation: none;
+  }
+}

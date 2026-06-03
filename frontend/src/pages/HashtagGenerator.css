@@ -1,0 +1,13 @@
+.hashtag-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.hashtag-content {
+  position: relative;
+  z-index: 2;
+}
+
+.hashtag-section .section {
+  padding-top: 0;
+}

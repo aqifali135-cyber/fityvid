@@ -1,0 +1,109 @@
+.downloader-form {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.platform-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+}
+
+.platform-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.platform-badge:hover {
+  border-color: var(--badge-color);
+  color: var(--badge-color);
+  transform: translateY(-1px);
+}
+
+.platform-badge--active {
+  background: var(--badge-bg);
+  color: var(--badge-color);
+  border-color: var(--badge-color);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.platform-badge--active.platform-badge--youtube {
+  box-shadow: 0 4px 16px rgba(255, 0, 0, 0.2);
+}
+
+.platform-badge--active.platform-badge--facebook {
+  box-shadow: 0 4px 16px rgba(24, 119, 242, 0.2);
+}
+
+.platform-badge--active.platform-badge--tiktok {
+  box-shadow: 0 4px 16px rgba(17, 24, 39, 0.15);
+}
+
+.platform-badge--active.platform-badge--instagram {
+  box-shadow: 0 4px 16px rgba(225, 48, 108, 0.22);
+}
+
+.platform-detect-hint {
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+  min-height: 1.25rem;
+  font-weight: 500;
+}
+
+.platform-detect-hint--idle {
+  color: #9ca3af;
+}
+
+.platform-detect-hint--detected {
+  color: #1f2937;
+}
+
+.platform-detect-hint--invalid {
+  color: #dc2626;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.downloader-notice {
+  margin: 1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  text-align: center;
+}
+
+.loading-text {
+  text-align: center;
+  color: var(--cyan-deep);
+  font-weight: 500;
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+  .platform-badge {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .platform-badges {
+    gap: 0.4rem;
+  }
+}
