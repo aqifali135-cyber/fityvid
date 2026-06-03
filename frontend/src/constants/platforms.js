@@ -10,11 +10,18 @@ export const PLATFORM_ICONS = {
   facebook: iconFacebook,
 };
 
+export const PLATFORM_ALT = {
+  youtube: 'YouTube video downloader',
+  tiktok: 'TikTok video downloader',
+  instagram: 'Instagram video downloader',
+  facebook: 'Facebook video downloader',
+};
+
 export const HOME_PLATFORMS = [
-  { id: 'youtube', name: 'YouTube', icon: iconYoutube },
-  { id: 'tiktok', name: 'TikTok', icon: iconTiktok },
-  { id: 'instagram', name: 'Instagram', icon: iconInstagram },
-  { id: 'facebook', name: 'Facebook', icon: iconFacebook },
+  { id: 'youtube', name: 'YouTube', icon: iconYoutube, alt: PLATFORM_ALT.youtube },
+  { id: 'tiktok', name: 'TikTok', icon: iconTiktok, alt: PLATFORM_ALT.tiktok },
+  { id: 'instagram', name: 'Instagram', icon: iconInstagram, alt: PLATFORM_ALT.instagram },
+  { id: 'facebook', name: 'Facebook', icon: iconFacebook, alt: PLATFORM_ALT.facebook },
 ];
 
 export const PLATFORMS_PAGE = [

@@ -25,7 +25,7 @@ export default function VideoThumbnail({ thumbnail, thumbnailDisplay, platform }
     <img
       className="video-thumbnail"
       src={src}
-      alt=""
+      alt={platform ? `${platform} video thumbnail preview` : 'Video thumbnail preview'}
       loading="lazy"
       width={320}
       height={180}

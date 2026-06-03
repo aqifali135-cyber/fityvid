@@ -44,7 +44,9 @@
   flex-shrink: 0;
 }
 
-.how-step-card h3 {
+.how-step-card h2,
+.how-step-card h3,
+.how-step-title {
   margin: 0 0 0.65rem;
   font-size: 1.1rem;
   font-weight: 700;

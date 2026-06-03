@@ -1,0 +1,64 @@
+.seo-content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.seo-content h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.75rem;
+}
+
+.seo-content p,
+.seo-content li {
+  color: #4b5563;
+  line-height: 1.65;
+  font-size: 0.95rem;
+}
+
+.seo-content p {
+  margin: 0 0 1rem;
+}
+
+.seo-content ul {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+}
+
+.seo-content li {
+  margin-bottom: 0.35rem;
+}
+
+.seo-content a {
+  color: #0ea5e9;
+  font-weight: 500;
+}
+
+.seo-content a:hover {
+  text-decoration: underline;
+}
+
+.seo-block {
+  margin-bottom: 2rem;
+}
+
+.seo-blocks-section {
+  background: var(--gray-50);
+  border-top: 1px solid var(--gray-100);
+}
+
+.seo-faq-preview {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.seo-faq-preview li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.seo-faq-preview li:last-child {
+  border-bottom: none;
+}

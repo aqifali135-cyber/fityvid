@@ -1,35 +1,62 @@
+import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import PageHero from '../components/PageHero';
+import { PAGE_SEO } from '../constants/seo';
+import '../components/SeoProse.css';
 
 export default function DownloadGuide() {
+  const seo = PAGE_SEO.downloadGuide;
+
   return (
     <>
-      <SEO title="Download Guide" description="Guide for downloading videos from YouTube, TikTok, Instagram, and Facebook with FityVid." />
-      <PageHero title="Download Guide" subtitle="Tips for using FityVid with YouTube, Facebook, TikTok, and Instagram." />
+      <SEO title={seo.title} description={seo.description} path={seo.path} noSuffix />
+      <PageHero
+        title="Video Download Guide"
+        subtitle="Step-by-step tips to download videos from YouTube, TikTok, Instagram, and Facebook."
+      />
       <section className="section" style={{ paddingTop: 0 }}>
-        <div className="container prose card">
+        <div className="container prose card seo-content">
           <h2>Before you download</h2>
           <p>
-            Please download only your own content or content you have permission to use.
-            FityVid processes publicly accessible videos only. Private or restricted videos are not supported.
+            FityVid is a free HD video downloader for publicly accessible links. Please
+            download only your own content or content you have permission to use. Private
+            or restricted videos are not supported.
           </p>
-          <h2>Supported links</h2>
+
+          <h2>Desktop, tablet, and mobile</h2>
+          <p>
+            Copy the video URL from your browser or app, open FityVid, paste the link, and
+            choose a quality option. When available, you can download video with file size
+            shown before saving.
+          </p>
+
+          <h2>Supported link types</h2>
           <ul>
-            <li>YouTube — standard watch URLs and youtu.be short links</li>
+            <li>YouTube — watch URLs, youtu.be links, and Shorts when publicly accessible</li>
             <li>TikTok — tiktok.com and vm.tiktok.com links</li>
-            <li>Instagram — public post and reel URLs</li>
+            <li>Instagram — public posts and Reels</li>
             <li>Facebook — facebook.com and fb.watch links</li>
           </ul>
-          <h2>What we do not do</h2>
+
+          <h2>What FityVid does not do</h2>
           <ul>
             <li>We do not bypass platform restrictions or DRM</li>
             <li>We do not support private or login-only content</li>
             <li>We do not encourage copyright infringement</li>
           </ul>
+
           <div className="notice-box">
-            FityVid supports YouTube, TikTok, Instagram, and Facebook links only.
-            FityVid is not affiliated with YouTube, Google, TikTok, ByteDance, Instagram, Facebook, or Meta.
+            FityVid is not affiliated with YouTube, TikTok, Instagram, Facebook, Google,
+            ByteDance, or Meta.
           </div>
+
+          <p>
+            <Link to="/how-it-works">How FityVid works</Link> ·{' '}
+            <Link to="/platforms">Supported platforms</Link> ·{' '}
+            <Link to="/" className="btn btn-primary">
+              Start Download
+            </Link>
+          </p>
         </div>
       </section>
     </>

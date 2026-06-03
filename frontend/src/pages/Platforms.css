@@ -47,7 +47,9 @@
   align-self: center;
 }
 
-.platforms-section .platform-card h3 {
+.platforms-section .platform-card h2,
+.platforms-section .platform-card h3,
+.platforms-section .platform-card .platform-card-heading {
   margin: 0 0 0.75rem;
   font-size: 1.1rem;
   font-weight: 700;

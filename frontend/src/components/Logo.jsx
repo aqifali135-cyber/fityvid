@@ -26,8 +26,7 @@ export default function Logo({
     <span className="logo-mark-wrap">
       <img
         src={logoMark}
-        alt=""
-        role="presentation"
+        alt="FityVid video downloader logo"
         className={`fityvid-logo fityvid-logo--${size} ${className}`.trim()}
         height={dims.height}
         decoding="async"
