@@ -106,18 +106,25 @@ VITE_API_BASE_URL=https://your-api-domain.com
 
 ### Deploy frontend on Vercel
 
-The repo root includes `vercel.json` so Vercel builds **`frontend/`** (not the Express backend).
+Vercel must deploy **`frontend/`** as a **Vite static site**, not the Express backend.
 
-1. Import the Git repo in Vercel (leave **Root Directory** empty, or set it to the repo root).
-2. In **Project → Settings → Environment Variables**, add:
+**Recommended (fixes “No entrypoint found”):**
+
+1. Vercel → **Project → Settings → General → Root Directory** → set to **`frontend`** → Save.
+2. **Settings → Build & Deployment**:
+   - **Framework Preset:** `Vite`
+   - **Build Command:** `npm run build` (default)
+   - **Output Directory:** `dist` (default)
+   - Clear any **Production Overrides** (yellow warning) so they match the above.
+3. **Environment Variables** → add:
    ```
    VITE_API_BASE_URL=https://your-backend.onrender.com
    ```
-3. Deploy. Output is `frontend/dist` (SPA; client routes rewrite to `index.html`).
+4. Redeploy.
 
-Deploy the **backend** separately on Render, Railway, or a VPS (yt-dlp + FFmpeg required). Vercel cannot run that API reliably.
+**If Root Directory stays at repo root:** root `vercel.json` sets `"framework": "vite"` and builds `frontend/dist`. Do **not** add a root `package.json` (that triggers Node/backend detection).
 
-**Alternative:** set Vercel **Root Directory** to `frontend` and remove the root `vercel.json` install/build overrides (Vite will auto-detect).
+Deploy the **backend** on Render, Railway, or a VPS (yt-dlp + FFmpeg). Vercel is frontend-only.
 
 ## API
 
