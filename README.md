@@ -104,6 +104,21 @@ Set `VITE_API_BASE_URL` in `frontend/.env` if the API is on a different host:
 VITE_API_BASE_URL=https://your-api-domain.com
 ```
 
+### Deploy frontend on Vercel
+
+The repo root includes `vercel.json` so Vercel builds **`frontend/`** (not the Express backend).
+
+1. Import the Git repo in Vercel (leave **Root Directory** empty, or set it to the repo root).
+2. In **Project → Settings → Environment Variables**, add:
+   ```
+   VITE_API_BASE_URL=https://your-backend.onrender.com
+   ```
+3. Deploy. Output is `frontend/dist` (SPA; client routes rewrite to `index.html`).
+
+Deploy the **backend** separately on Render, Railway, or a VPS (yt-dlp + FFmpeg required). Vercel cannot run that API reliably.
+
+**Alternative:** set Vercel **Root Directory** to `frontend` and remove the root `vercel.json` install/build overrides (Vite will auto-detect).
+
 ## API
 
 ### POST `/api/video/info`
