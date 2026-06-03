@@ -1,4 +1,6 @@
 import { validateVideoUrl } from '../utils/platformDetector.js';
+import { getVideoProvider } from '../utils/videoProvider.js';
+import { fetchVideoInfoFromRapidApi } from './rapidApiAllInOneService.js';
 import {
   checkYtDlp,
   runYtDlpWithYoutubeFallback,
@@ -15,7 +17,7 @@ import {
 
 const PREFERRED_HEIGHTS = [1080, 720, 480, 360];
 
-export { checkYtDlp };
+export { checkYtDlp, getVideoProvider };
 
 function isHttpUrl(value) {
   return typeof value === 'string' && /^https?:\/\//i.test(value);
@@ -211,7 +213,7 @@ function extractFormatList(info, sourceUrl, platform) {
   }));
 }
 
-export async function fetchVideoInfo(url) {
+async function fetchVideoInfoYtDlp(url) {
   const validation = validateVideoUrl(url);
   if (!validation.valid) {
     return { success: false, message: validation.message };
@@ -221,6 +223,7 @@ export async function fetchVideoInfo(url) {
   if (!available) {
     return {
       success: false,
+      statusCode: 503,
       message: 'Video extractor is not configured. Please install yt-dlp on the server.',
     };
   }
@@ -251,7 +254,7 @@ export async function fetchVideoInfo(url) {
     if (formats.length === 0) {
       return {
         success: false,
-        message: 'No downloadable format found for this video.',
+        message: 'No downloadable video link found. Please try another public video link.',
       };
     }
 
@@ -299,6 +302,19 @@ export async function fetchVideoInfo(url) {
   }
 }
 
+export async function fetchVideoInfo(url) {
+  const validation = validateVideoUrl(url);
+  if (!validation.valid) {
+    return { success: false, message: validation.message };
+  }
+
+  if (getVideoProvider() === 'rapidapi_all_in_one') {
+    return fetchVideoInfoFromRapidApi(validation);
+  }
+
+  return fetchVideoInfoYtDlp(url);
+}
+
 export function sanitizeFilename(name) {
   return (name || 'video')
     .replace(/[<>:"/\\|?*]/g, '')
@@ -306,8 +322,64 @@ export function sanitizeFilename(name) {
     .slice(0, 80) || 'video';
 }
 
+export async function streamDirectDownload(sourceUrl, title, ext, res) {
+  const safeName = sanitizeFilename(title);
+  const extension = ext || 'mp4';
+  const contentType =
+    extension === 'mp4'
+      ? 'video/mp4'
+      : extension === 'webm'
+        ? 'video/webm'
+        : 'application/octet-stream';
+
+  const upstream = await fetch(sourceUrl, {
+    headers: {
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      Accept: '*/*',
+    },
+    signal: AbortSignal.timeout(120000),
+  });
+
+  if (!upstream.ok) {
+    throw new Error(`Direct download failed: ${upstream.status}`);
+  }
+
+  res.setHeader('Content-Type', upstream.headers.get('content-type') || contentType);
+  res.setHeader('Content-Disposition', `attachment; filename="${safeName}.${extension}"`);
+
+  const reader = upstream.body?.getReader?.();
+  if (reader) {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(Buffer.from(value));
+    }
+    res.end();
+    return;
+  }
+
+  const buffer = Buffer.from(await upstream.arrayBuffer());
+  res.send(buffer);
+}
+
 export async function streamVideoDownload(videoUrl, formatId, title, ext, res, options = {}) {
-  const { platform, needsMerge } = options;
+  const { platform, needsMerge, directUrl } = options;
+
+  if (directUrl && isHttpUrl(directUrl)) {
+    try {
+      await streamDirectDownload(directUrl, title, ext, res);
+      return;
+    } catch {
+      if (!res.headersSent) {
+        return res.status(500).json({
+          success: false,
+          message: 'Unable to download this video link. Please try another format.',
+        });
+      }
+      return;
+    }
+  }
 
   const useInstagramMerge =
     platform === 'instagram' &&
@@ -347,11 +419,8 @@ export async function streamVideoDownload(videoUrl, formatId, title, ext, res, o
   res.setHeader('Content-Type', contentType);
   res.setHeader('Content-Disposition', `attachment; filename="${safeName}.${extension}"`);
 
-  const mergeFormat =
-    formatId.includes('+') ? formatId : formatId;
-
+  const mergeFormat = formatId.includes('+') ? formatId : formatId;
   const args = buildDownloadArgs(mergeFormat, videoUrl, platform || '');
-
   const proc = spawnYtDlp(args);
   proc.stdout.pipe(res);
 

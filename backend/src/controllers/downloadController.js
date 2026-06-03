@@ -1,5 +1,7 @@
 import { validateDownloadUrl } from '../utils/validation.js';
 import { checkYtDlp, getYtDlpVersion } from '../utils/ytdlpRunner.js';
+import { getVideoProvider } from '../utils/videoProvider.js';
+import { isRapidApiConfigured } from '../services/rapidApiAllInOneService.js';
 
 export function validateUrlHandler(req, res) {
   const { url } = req.body || {};
@@ -22,13 +24,20 @@ export function validateUrlHandler(req, res) {
 
 export async function healthHandler(_req, res) {
   const ytDlpReady = await checkYtDlp();
+  const provider = getVideoProvider();
+
   res.json({
     success: true,
     service: 'FityVid API',
     platforms: ['youtube', 'facebook', 'tiktok', 'instagram'],
+    videoProvider: provider,
+    rapidApi: {
+      configured: isRapidApiConfigured(),
+    },
     ytDlp: {
       ready: ytDlpReady,
       version: getYtDlpVersion() || null,
+      fallback: provider === 'yt-dlp',
     },
   });
 }

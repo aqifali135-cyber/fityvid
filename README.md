@@ -24,10 +24,32 @@ fity/
 ## Requirements
 
 - Node.js 18+
-- **yt-dlp** (required for real video metadata and downloads)
-- **FFmpeg** (required for Instagram downloads with audio — use Render, Railway, or VPS; not available on most Namecheap shared hosting)
+- **Production (cPanel / shared hosting):** RapidAPI key — no yt-dlp or FFmpeg required
+- **Local / VPS (optional):** yt-dlp + FFmpeg for `VIDEO_API_PROVIDER=yt-dlp`
 
-### Install yt-dlp
+### Video provider
+
+Set in `backend/.env`:
+
+| Variable | Production (cPanel) | Local dev |
+|----------|---------------------|-----------|
+| `VIDEO_API_PROVIDER` | `rapidapi_all_in_one` | `yt-dlp` |
+| `RAPIDAPI_KEY` | Your RapidAPI key | *(optional)* |
+| `RAPIDAPI_ALL_HOST` | `social-download-all-in-one.p.rapidapi.com` | same |
+| `RAPIDAPI_ALL_BASE_URL` | `https://social-download-all-in-one.p.rapidapi.com` | same |
+
+The frontend always calls `POST /api/video/info`. The RapidAPI key stays on the server only.
+
+Check `GET /api/health`:
+
+```json
+{
+  "videoProvider": "rapidapi_all_in_one",
+  "rapidApi": { "configured": true }
+}
+```
+
+### Install yt-dlp (local / VPS only)
 
 **Windows (winget):**
 ```powershell
@@ -55,14 +77,14 @@ yt-dlp --version
 ffmpeg -version
 ```
 
-### Hosting (Namecheap + backend)
+### Hosting
 
-- Deploy **frontend** on Vercel with `VITE_API_BASE_URL=https://api.fityvid.com`
-- Deploy **backend** on Render, Railway, or a VPS where **yt-dlp** and **FFmpeg** are installed
-- Use `backend/Dockerfile` or `render.yaml` for one-click deploy with yt-dlp included
-- Check `https://your-api/api/health` — `ytDlp.ready` must be `true` for downloads to work
-- Instagram thumbnails are proxied via `/api/video/thumbnail` to avoid broken images
-- Instagram videos are merged with FFmpeg when video and audio are separate streams
+- **Frontend:** Vercel with `VITE_API_BASE_URL=https://api.fityvid.com`
+- **Backend (production):** Namecheap cPanel Node.js or any Node 18+ host
+  - Set `VIDEO_API_PROVIDER=rapidapi_all_in_one` and `RAPIDAPI_KEY`
+  - No yt-dlp or FFmpeg needed on cPanel
+- **Backend (local / VPS fallback):** set `VIDEO_API_PROVIDER=yt-dlp` and install yt-dlp + FFmpeg
+- Instagram thumbnails may still be proxied via `/api/video/thumbnail` when using yt-dlp
 
 ## Setup
 

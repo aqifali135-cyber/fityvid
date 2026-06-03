@@ -1,10 +1,18 @@
 import { validateVideoUrl, PLATFORMS } from '../utils/platformDetector.js';
+import { isRapidApiProvider } from '../utils/videoProvider.js';
 import {
   fetchVideoInfo,
   streamVideoDownload,
   checkYtDlp,
   fetchThumbnailProxy,
 } from '../services/videoService.js';
+
+function resolveStatus(result) {
+  if (result.statusCode) return result.statusCode;
+  if (result.message?.includes('not configured')) return 503;
+  if (result.message?.includes('rate limit')) return 429;
+  return 400;
+}
 
 export async function getVideoInfo(req, res) {
   const { url, platform: clientPlatform } = req.body || {};
@@ -43,8 +51,7 @@ export async function getVideoInfo(req, res) {
   const result = await fetchVideoInfo(url);
 
   if (!result.success) {
-    const status = result.message?.includes('not configured') ? 503 : 400;
-    return res.status(status).json(result);
+    return res.status(resolveStatus(result)).json(result);
   }
 
   return res.json(result);
@@ -80,8 +87,33 @@ export async function downloadVideo(req, res) {
   const ext = req.query.ext || 'mp4';
   const platform = (req.query.platform || '').toLowerCase();
   const needsMerge = req.query.merge === '1' || String(formatId || '').includes('+');
+  const directUrl = req.query.direct;
 
-  if (!videoUrl || !formatId) {
+  if (!videoUrl && !directUrl) {
+    return res.status(400).json({
+      success: false,
+      message: 'Unable to fetch video details. Please try another public video link.',
+    });
+  }
+
+  if (directUrl) {
+    try {
+      await streamVideoDownload('', 'direct', String(title || 'video'), String(ext), res, {
+        directUrl: String(directUrl),
+      });
+      return;
+    } catch {
+      if (!res.headersSent) {
+        return res.status(500).json({
+          success: false,
+          message: 'Unable to download this video link. Please try another format.',
+        });
+      }
+      return;
+    }
+  }
+
+  if (!formatId) {
     return res.status(400).json({
       success: false,
       message: 'Unable to fetch video details. Please try another public video link.',
@@ -93,6 +125,13 @@ export async function downloadVideo(req, res) {
     return res.status(400).json({
       success: false,
       message: validation.message,
+    });
+  }
+
+  if (isRapidApiProvider() && String(formatId).startsWith('rapidapi-')) {
+    return res.status(400).json({
+      success: false,
+      message: 'Use the direct download link returned by the video info API.',
     });
   }
 

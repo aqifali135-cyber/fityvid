@@ -6,6 +6,8 @@ import { healthHandler } from './controllers/downloadController.js';
 import { downloadVideo } from './controllers/videoController.js';
 import { videoInfoLimiter, downloadLimiter } from './middleware/rateLimit.js';
 import { checkYtDlp, getYtDlpVersion } from './utils/ytdlpRunner.js';
+import { getVideoProvider } from './utils/videoProvider.js';
+import { isRapidApiConfigured } from './services/rapidApiAllInOneService.js';
 
 const app = express();
 const PORT = process.env.PORT || 8787;
@@ -29,12 +31,22 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(PORT, async () => {
-  const ready = await checkYtDlp();
+  const provider = getVideoProvider();
   console.log(`FityVid API running on http://localhost:${PORT}`);
-  console.log(`Video extractor: ${process.env.VIDEO_EXTRACTOR || 'yt-dlp'}`);
-  if (ready) {
-    console.log(`yt-dlp version: ${getYtDlpVersion() || 'unknown'}`);
-  } else {
-    console.warn('WARNING: yt-dlp is not available. Install yt-dlp on the server for video downloads.');
+  console.log(`Video provider: ${provider}`);
+
+  if (provider === 'rapidapi_all_in_one') {
+    console.log(`RapidAPI configured: ${isRapidApiConfigured() ? 'yes' : 'no (set RAPIDAPI_KEY)'}`);
+  }
+
+  const ready = await checkYtDlp();
+  if (provider === 'yt-dlp') {
+    if (ready) {
+      console.log(`yt-dlp version: ${getYtDlpVersion() || 'unknown'}`);
+    } else {
+      console.warn('WARNING: yt-dlp is not available. Install yt-dlp for local video downloads.');
+    }
+  } else if (ready) {
+    console.log(`yt-dlp fallback available: ${getYtDlpVersion() || 'yes'}`);
   }
 });

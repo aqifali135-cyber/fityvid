@@ -69,9 +69,11 @@ export default function VideoResult({ data, onReset }) {
                   }`}
                 >
                   Audio:{' '}
-                  {fmt.audioIncluded
-                    ? 'Included'
-                    : fmt.audioNote || 'Not available'}
+                  {fmt.audioIncluded === null
+                    ? 'Unknown'
+                    : fmt.audioIncluded
+                      ? 'Included'
+                      : fmt.audioNote || 'Not available'}
                 </span>
               </div>
               <button
