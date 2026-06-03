@@ -4,7 +4,7 @@ const DEFAULT_BASE = 'https://social-download-all-in-one.p.rapidapi.com';
 const DEFAULT_HOST = 'social-download-all-in-one.p.rapidapi.com';
 
 function isHttpUrl(value) {
-  return typeof value === 'string' && /^https?:\/\//i.test(value);
+  return typeof value === 'string' && /^https?:\/\//i.test(value.trim());
 }
 
 function formatDuration(raw) {
@@ -12,6 +12,7 @@ function formatDuration(raw) {
   let total = Number(raw);
   if (!Number.isFinite(total) || total <= 0) return '';
 
+  // Values above 24h in seconds are likely milliseconds (e.g. TikTok).
   if (total > 86400) {
     total = Math.floor(total / 1000);
   }
@@ -34,153 +35,120 @@ function formatFileSize(bytes) {
   return `${Math.max(1, Math.round(mb))} MB`;
 }
 
-function qualityLabel(raw) {
-  if (!raw) return 'Available';
-  const q = String(raw).toLowerCase().replace(/_/g, ' ');
-  if (q.includes('hd') && q.includes('watermark')) return 'HD No Watermark';
-  if (q.includes('no watermark') || q === 'no watermark') return 'No Watermark';
-  if (q.includes('watermark') && !q.includes('no')) return 'Watermarked';
-  if (q === 'hd' || q.includes('hd')) return 'HD';
-  if (q === 'sd' || q.includes('sd')) return 'SD';
-  if (q.includes('1080')) return '1080p';
-  if (q.includes('720')) return '720p';
-  if (q.includes('480')) return '480p';
-  if (q.includes('360')) return '360p';
-  if (q.includes('240')) return '240p';
-  return q.replace(/\b\w/g, (c) => c.toUpperCase()) || 'Available';
+function logMappingFailure(reason, details) {
+  const extra =
+    typeof details === 'string'
+      ? details
+      : JSON.stringify(details ?? null).slice(0, 2500);
+  console.error('[rapidapi] mapping failed:', reason, extra);
 }
 
-function inferFormat(ext, url) {
-  if (ext) return String(ext).toLowerCase().replace(/^\./, '');
-  const match = String(url || '').match(/\.([a-z0-9]{2,4})(?:\?|$)/i);
-  return match ? match[1].toLowerCase() : 'mp4';
-}
+function isFailureMessage(message) {
+  if (!message || typeof message !== 'string') return false;
+  const m = message.toLowerCase().trim();
+  if (!m) return false;
 
-function isVideoEntry(type, extension, url) {
-  const t = String(type || '').toLowerCase();
-  const ext = inferFormat(extension, url);
-  if (t === 'audio' || ext === 'mp3' || ext === 'm4a') return false;
-  if (t === 'image' || ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) return false;
-  return true;
-}
-
-function pushFormat(formats, seen, entry) {
-  const url = entry.url;
-  if (!isHttpUrl(url) || seen.has(url)) return;
-  seen.add(url);
-
-  formats.push({
-    quality: entry.quality || 'Available',
-    format: inferFormat(entry.extension, url),
-    size: entry.size || 'Size may vary',
-    formatId: `rapidapi-${formats.length}`,
-    audioIncluded: entry.audioIncluded ?? null,
-    downloadUrl: url,
-  });
-}
-
-function collectFromMedias(payload, formats, seen) {
-  const medias = payload.medias || payload.media;
-  if (!Array.isArray(medias)) return;
-
-  for (const item of medias) {
-    if (!item || typeof item !== 'object') continue;
-    const url = item.url || item.download_url || item.downloadUrl || item.link;
-    if (!isVideoEntry(item.type, item.extension || item.ext, url)) continue;
-
-    pushFormat(formats, seen, {
-      url,
-      quality: qualityLabel(item.quality || item.label || item.resolution),
-      extension: item.extension || item.ext,
-      size: formatFileSize(item.size || item.filesize || item.file_size),
-      audioIncluded:
-        item.audioIncluded ??
-        (item.type === 'video' && item.acodec ? item.acodec !== 'none' : null),
-    });
-  }
-}
-
-function collectFromNamedFields(payload, formats, seen) {
-  const pairs = [
-    ['video_hd', 'HD'],
-    ['hd', 'HD'],
-    ['video', 'Available'],
-    ['video_url', 'Available'],
-    ['download', 'Available'],
-    ['download_url', 'Available'],
-    ['no_watermark', 'No Watermark'],
-    ['video_no_watermark', 'No Watermark'],
-    ['sd', 'SD'],
-    ['watermark', 'Watermarked'],
+  const failureHints = [
+    'failed',
+    'invalid url',
+    'invalid link',
+    'not found',
+    'not available',
+    'unable to',
+    'unsupported',
+    'denied',
+    'forbidden',
+    'private video',
+    'rate limit',
+    'quota exceeded',
   ];
 
-  for (const [field, label] of pairs) {
-    const value = payload[field];
-    if (isHttpUrl(value)) {
-      pushFormat(formats, seen, {
-        url: value,
-        quality: label,
-        extension: inferFormat(null, value),
-        size: 'Size may vary',
-        audioIncluded: null,
-      });
-    }
+  return failureHints.some((hint) => m.includes(hint));
+}
+
+function isProviderError(payload) {
+  if (!payload || typeof payload !== 'object') return true;
+
+  if (payload.error === true) return true;
+
+  if (typeof payload.error === 'string' && payload.error.trim().length > 0) {
+    return true;
   }
 
-  const links = payload.links;
-  if (links && typeof links === 'object' && !Array.isArray(links)) {
-    for (const [key, value] of Object.entries(links)) {
-      if (!isHttpUrl(value)) continue;
-      pushFormat(formats, seen, {
-        url: value,
-        quality: qualityLabel(key),
-        extension: inferFormat(null, value),
-        size: 'Size may vary',
-        audioIncluded: null,
-      });
-    }
+  if (payload.success === false) return true;
+
+  if (isFailureMessage(payload.message) || isFailureMessage(payload.error_message)) {
+    return true;
   }
+
+  return false;
 }
 
 function unwrapPayload(raw) {
   if (Array.isArray(raw)) {
-    return raw.find((item) => item && typeof item === 'object') || null;
+    return (
+      raw.find((item) => item && typeof item === 'object' && (item.medias || item.source)) ||
+      raw[0] ||
+      null
+    );
   }
+
   if (!raw || typeof raw !== 'object') return null;
-  if (raw.data && typeof raw.data === 'object' && !Array.isArray(raw.data)) {
-    return { ...raw, ...raw.data, source: raw.source || raw.platform || raw.data.source };
+
+  if (Array.isArray(raw.data)) {
+    const nested =
+      raw.data.find((item) => item && typeof item === 'object' && (item.medias || item.source)) ||
+      raw.data[0];
+    if (nested) return nested;
   }
+
+  if (raw.data && typeof raw.data === 'object' && !Array.isArray(raw.data)) {
+    return {
+      ...raw.data,
+      source: raw.data.source || raw.source || raw.platform,
+    };
+  }
+
+  if (raw.result && typeof raw.result === 'object') {
+    return unwrapPayload(raw.result);
+  }
+
   return raw;
 }
 
-function extractFormats(payload) {
-  const formats = [];
-  const seen = new Set();
-  collectFromMedias(payload, formats, seen);
-  collectFromNamedFields(payload, formats, seen);
+function mediaItemToFormat(item, index) {
+  const url = typeof item?.url === 'string' ? item.url.trim() : '';
+  if (!isHttpUrl(url)) return null;
 
-  if (isHttpUrl(payload.url) && formats.length === 0) {
-    const looksLikeFile =
-      /\.(mp4|webm|mov|m4v)(\?|$)/i.test(payload.url) ||
-      String(payload.type || '').toLowerCase() === 'video';
-    if (looksLikeFile) {
-      pushFormat(formats, seen, {
-        url: payload.url,
-        quality: 'Available',
-        extension: inferFormat(null, payload.url),
-        size: 'Size may vary',
-        audioIncluded: null,
-      });
-    }
-  }
+  const sizeBytes = item.data_size ?? item.size ?? item.filesize ?? item.file_size;
 
-  return formats;
+  return {
+    quality: item.height ? `${item.height}p` : item.quality || 'Available',
+    format: (item.extension || 'mp4').toLowerCase().replace(/^\./, ''),
+    size: sizeBytes ? formatFileSize(sizeBytes) : 'Size may vary',
+    formatId: `rapidapi-${index}`,
+    audioIncluded: null,
+    downloadUrl: url,
+  };
 }
 
-function mapApiError(status, bodyText, parsed) {
-  const text = `${bodyText || ''} ${JSON.stringify(parsed || {})}`.toLowerCase();
+function extractFormatsFromMedias(payload) {
+  const medias = payload.medias || payload.media;
+  if (!Array.isArray(medias)) return [];
 
-  if (status === 429 || text.includes('rate limit') || text.includes('quota')) {
+  const withUrl = medias.filter((item) => item && isHttpUrl(item.url));
+  const videos = withUrl.filter((item) => String(item.type || '').toLowerCase() === 'video');
+  const pool = videos.length > 0 ? videos : withUrl;
+
+  return pool
+    .map((item, index) => mediaItemToFormat(item, index))
+    .filter(Boolean);
+}
+
+function mapHttpError(status, parsed) {
+  const providerMessage = parsed?.message || parsed?.error_message || '';
+
+  if (status === 429) {
     return {
       success: false,
       statusCode: 429,
@@ -188,12 +156,7 @@ function mapApiError(status, bodyText, parsed) {
     };
   }
 
-  if (
-    status === 401 ||
-    status === 403 ||
-    text.includes('invalid api key') ||
-    text.includes('unauthorized')
-  ) {
+  if (status === 401 || status === 403) {
     return {
       success: false,
       statusCode: 503,
@@ -201,14 +164,7 @@ function mapApiError(status, bodyText, parsed) {
     };
   }
 
-  if (
-    text.includes('private') ||
-    text.includes('not found') ||
-    text.includes('unavailable') ||
-    text.includes('removed') ||
-    text.includes('login') ||
-    text.includes('403 forbidden')
-  ) {
+  if (isFailureMessage(providerMessage)) {
     return {
       success: false,
       statusCode: 400,
@@ -227,13 +183,15 @@ function mapApiError(status, bodyText, parsed) {
   return {
     success: false,
     statusCode: 400,
-    message: 'Unable to fetch video details. Please try another public video link.',
+    message: providerMessage || 'Unable to fetch video details. Please try another public video link.',
   };
 }
 
 export function normalizeRapidApiResponse(raw, validation) {
   const payload = unwrapPayload(raw);
+
   if (!payload) {
+    logMappingFailure('empty payload after unwrap', raw);
     return {
       success: false,
       statusCode: 502,
@@ -241,12 +199,29 @@ export function normalizeRapidApiResponse(raw, validation) {
     };
   }
 
-  if (payload.error === true || payload.success === false) {
-    return mapApiError(400, payload.message || payload.error_message || '', payload);
+  if (isProviderError(payload)) {
+    logMappingFailure('provider reported error', {
+      error: payload.error,
+      message: payload.message,
+      success: payload.success,
+    });
+    return {
+      success: false,
+      statusCode: 400,
+      message: 'Unable to fetch video details. Please try another public video link.',
+    };
   }
 
-  const source = normalizePlatformSource(payload.source || payload.platform);
+  const source = normalizePlatformSource(
+    payload.source || payload.platform || validation.platform,
+  );
+
   if (!isSupportedPlatform(source)) {
+    logMappingFailure('unsupported platform', {
+      source: payload.source,
+      platform: payload.platform,
+      detected: validation.platform,
+    });
     return {
       success: false,
       statusCode: 400,
@@ -254,16 +229,15 @@ export function normalizeRapidApiResponse(raw, validation) {
     };
   }
 
-  if (validation.platform && source !== validation.platform) {
-    return {
-      success: false,
-      statusCode: 400,
-      message: 'Platform does not match the video URL.',
-    };
-  }
+  const formats = extractFormatsFromMedias(payload);
 
-  const formats = extractFormats(payload);
   if (formats.length === 0) {
+    logMappingFailure('no downloadable media urls', {
+      source,
+      mediasCount: Array.isArray(payload.medias) ? payload.medias.length : 0,
+      medias: payload.medias,
+      type: payload.type,
+    });
     return {
       success: false,
       statusCode: 400,
@@ -271,21 +245,16 @@ export function normalizeRapidApiResponse(raw, validation) {
     };
   }
 
-  const thumbnail =
-    payload.thumbnail ||
-    payload.thumb ||
-    payload.cover ||
-    payload.image ||
-    '';
+  const thumbnail = payload.thumbnail || payload.thumb || payload.cover || null;
 
   return {
     success: true,
     platform: source,
-    title: payload.title || payload.caption || 'Untitled video',
+    title: payload.title || payload.caption || 'Video by FityVid',
     thumbnail,
     thumbnailDisplay: thumbnail,
     duration: formatDuration(payload.duration),
-    author: payload.author || payload.unique_id || payload.username || '',
+    author: payload.author || payload.unique_id || null,
     formats,
   };
 }
@@ -293,6 +262,7 @@ export function normalizeRapidApiResponse(raw, validation) {
 export async function fetchVideoInfoFromRapidApi(validation) {
   const apiKey = process.env.RAPIDAPI_KEY;
   if (!apiKey) {
+    logMappingFailure('missing RAPIDAPI_KEY', null);
     return {
       success: false,
       statusCode: 503,
@@ -316,9 +286,7 @@ export async function fetchVideoInfoFromRapidApi(validation) {
       signal: AbortSignal.timeout(60000),
     });
   } catch (err) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error('[rapidapi]', err.message);
-    }
+    logMappingFailure('fetch error', err.message);
     return {
       success: false,
       statusCode: 502,
@@ -328,17 +296,31 @@ export async function fetchVideoInfoFromRapidApi(validation) {
 
   const bodyText = await response.text();
   let parsed;
+
   try {
     parsed = bodyText ? JSON.parse(bodyText) : null;
-  } catch {
-    return mapApiError(response.status, bodyText, null);
+  } catch (err) {
+    logMappingFailure('invalid json', { status: response.status, body: bodyText.slice(0, 500) });
+    return mapHttpError(response.status, null);
   }
 
   if (!response.ok) {
-    return mapApiError(response.status, bodyText, parsed);
+    logMappingFailure('http error', { status: response.status, body: parsed || bodyText.slice(0, 500) });
+    return mapHttpError(response.status, parsed);
   }
 
-  return normalizeRapidApiResponse(parsed, validation);
+  const result = normalizeRapidApiResponse(parsed, validation);
+
+  if (!result.success) {
+    logMappingFailure('normalize returned failure', {
+      url: validation.url,
+      platform: validation.platform,
+      parsedKeys: parsed && typeof parsed === 'object' ? Object.keys(parsed) : [],
+      result,
+    });
+  }
+
+  return result;
 }
 
 export function isRapidApiConfigured() {

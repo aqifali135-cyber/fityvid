@@ -309,7 +309,16 @@ export async function fetchVideoInfo(url) {
   }
 
   if (getVideoProvider() === 'rapidapi_all_in_one') {
-    return fetchVideoInfoFromRapidApi(validation);
+    const result = await fetchVideoInfoFromRapidApi(validation);
+    if (!result.success) {
+      console.error('[videoService] RapidAPI video info failed:', {
+        url: validation.url,
+        platform: validation.platform,
+        message: result.message,
+        statusCode: result.statusCode,
+      });
+    }
+    return result;
   }
 
   return fetchVideoInfoYtDlp(url);
