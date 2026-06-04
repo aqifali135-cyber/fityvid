@@ -1,0 +1,56 @@
+.hashtag-hero-cta {
+  margin-top: 1.25rem;
+}
+
+.hashtag-seo-block {
+  margin-top: 2rem;
+}
+
+.hashtag-seo-block:first-child {
+  margin-top: 0;
+}
+
+.hashtag-steps {
+  margin: 0 0 1rem;
+  padding-left: 1.35rem;
+}
+
+.hashtag-steps li {
+  margin-bottom: 0.5rem;
+  color: #4b5563;
+  line-height: 1.65;
+  font-size: 0.95rem;
+}
+
+.hashtag-disclaimer {
+  margin: 2rem 0;
+}
+
+.hashtag-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.hashtag-related-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+
+.hashtag-related-links a {
+  font-weight: 500;
+}
+
+.hashtag-bottom-cta {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.hashtag-landing-prose {
+  max-width: 720px;
+  margin: 0 auto;
+}

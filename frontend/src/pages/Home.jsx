@@ -56,6 +56,15 @@ export default function Home() {
             <Link to="/hashtag-generator" className="btn btn-primary">
               Try Hashtag Generator
             </Link>
+            <p className="hashtag-promo-links" style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
+              <Link to="/tiktok-hashtag-generator">TikTok hashtags</Link>
+              {' · '}
+              <Link to="/instagram-hashtag-generator">Instagram hashtags</Link>
+              {' · '}
+              <Link to="/youtube-hashtag-generator">YouTube hashtags</Link>
+              {' · '}
+              <Link to="/facebook-hashtag-generator">Facebook hashtags</Link>
+            </p>
           </div>
           <div className="hashtag-promo-preview" aria-hidden="true">
             <span>#fitness</span>
@@ -123,7 +132,11 @@ export default function Home() {
               social posts without spammy suggestions.
             </p>
             <p>
-              <Link to="/hashtag-generator">Open the hashtag generator</Link>
+              <Link to="/hashtag-generator">Open the hashtag generator</Link> ·{' '}
+              <Link to="/tiktok-hashtag-generator">TikTok</Link> ·{' '}
+              <Link to="/instagram-hashtag-generator">Instagram</Link> ·{' '}
+              <Link to="/youtube-hashtag-generator">YouTube</Link> ·{' '}
+              <Link to="/facebook-hashtag-generator">Facebook</Link>
             </p>
           </div>
 

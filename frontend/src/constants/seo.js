@@ -29,9 +29,33 @@ export const PAGE_SEO = {
   },
   hashtagGenerator: {
     path: '/hashtag-generator',
-    title: 'FityVid Hashtag Generator - Generate Hashtags for YouTube, TikTok, Instagram & Facebook',
+    title: 'Free Hashtag Generator — Create Hashtags for TikTok, Instagram, YouTube & Facebook',
     description:
-      'Generate relevant hashtags for YouTube, TikTok, Instagram, and Facebook posts, reels, shorts, and videos with FityVid’s free hashtag generator.',
+      'Generate relevant hashtags for posts, reels, Shorts, and videos. Free hashtag tool for TikTok, Instagram, YouTube, and Facebook creators on FityVid.',
+  },
+  tiktokHashtagGenerator: {
+    path: '/tiktok-hashtag-generator',
+    title: 'TikTok Hashtag Generator — Free Tag Ideas for TikTok Videos | FityVid',
+    description:
+      'Learn TikTok hashtag tips and generate tag ideas with FityVid. Plan captions for For You discovery—hashtags help organize content but do not guarantee views.',
+  },
+  instagramHashtagGenerator: {
+    path: '/instagram-hashtag-generator',
+    title: 'Instagram Hashtag Generator — Tags for Reels & Posts | FityVid',
+    description:
+      'Instagram hashtag guide and free generator on FityVid. Get relevant tag ideas for Reels and feed posts. Hashtags support discovery; they do not guarantee reach.',
+  },
+  youtubeHashtagGenerator: {
+    path: '/youtube-hashtag-generator',
+    title: 'YouTube Hashtag Generator — Tags for Videos & Shorts | FityVid',
+    description:
+      'Plan YouTube hashtags for videos and Shorts with FityVid’s guide and free generator. Relevant tags may help topic browsing; they do not guarantee rankings.',
+  },
+  facebookHashtagGenerator: {
+    path: '/facebook-hashtag-generator',
+    title: 'Facebook Hashtag Generator — Tags for Page Posts & Video | FityVid',
+    description:
+      'Facebook hashtag tips and free tag suggestions on FityVid. Plan Page and video posts with relevant hashtags—tags alone do not guarantee reach.',
   },
   faq: {
     path: '/faq',

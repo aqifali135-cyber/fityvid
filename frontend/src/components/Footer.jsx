@@ -2,6 +2,43 @@ import { Link } from 'react-router-dom';
 import Logo from './Logo';
 import './Footer.css';
 
+const SITE_LINKS = [
+  { to: '/', label: 'Home' },
+  { to: '/faq', label: 'FAQ' },
+  { to: '/contact', label: 'Contact' },
+  { to: '/about', label: 'About Us' },
+];
+
+const HASHTAG_LINKS = [
+  { to: '/hashtag-generator', label: 'Hashtag Generator' },
+  { to: '/tiktok-hashtag-generator', label: 'TikTok Hashtag Generator' },
+  { to: '/instagram-hashtag-generator', label: 'Instagram Hashtag Generator' },
+  { to: '/youtube-hashtag-generator', label: 'YouTube Hashtag Generator' },
+  { to: '/facebook-hashtag-generator', label: 'Facebook Hashtag Generator' },
+];
+
+const LEGAL_LINKS = [
+  { to: '/privacy-policy', label: 'Privacy Policy' },
+  { to: '/terms-and-conditions', label: 'Terms & Conditions' },
+  { to: '/disclaimer', label: 'Disclaimer' },
+  { to: '/dmca', label: 'DMCA' },
+];
+
+function FooterNavColumn({ title, links, ariaLabel }) {
+  return (
+    <nav className="footer-nav-col" aria-label={ariaLabel}>
+      <h4>{title}</h4>
+      <ul>
+        {links.map(({ to, label }) => (
+          <li key={to}>
+            <Link to={to}>{label}</Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 export default function Footer() {
   return (
     <footer className="footer">
@@ -13,28 +50,13 @@ export default function Footer() {
             and Facebook.
           </p>
         </div>
-        <div>
-          <h4>Quick Links</h4>
-          <ul>
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/how-it-works">How It Works</Link></li>
-            <li><Link to="/platforms">Platforms</Link></li>
-            <li><Link to="/hashtag-generator">Hashtag Generator</Link></li>
-            <li><Link to="/download-guide">Download Guide</Link></li>
-            <li><Link to="/faq">FAQ</Link></li>
-            <li><Link to="/about">About</Link></li>
-            <li><Link to="/contact">Contact</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Legal</h4>
-          <ul>
-            <li><Link to="/privacy-policy">Privacy Policy</Link></li>
-            <li><Link to="/terms-and-conditions">Terms and Conditions</Link></li>
-            <li><Link to="/dmca">DMCA</Link></li>
-            <li><Link to="/disclaimer">Disclaimer</Link></li>
-          </ul>
-        </div>
+        <FooterNavColumn title="Site" links={SITE_LINKS} ariaLabel="Site navigation" />
+        <FooterNavColumn
+          title="Hashtag Tools"
+          links={HASHTAG_LINKS}
+          ariaLabel="Hashtag tools"
+        />
+        <FooterNavColumn title="Legal" links={LEGAL_LINKS} ariaLabel="Legal policies" />
       </div>
       <div className="container footer-bottom">
         <p>© {new Date().getFullYear()} FityVid. All rights reserved.</p>
