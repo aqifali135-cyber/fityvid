@@ -3,60 +3,234 @@
   margin: 0 auto;
 }
 
-.platform-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  justify-content: center;
+/* Homepage hero platform selector — premium 2×2 grid */
+.home-platform-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+  max-width: 420px;
+  margin: 0 auto 1.25rem;
 }
 
-.platform-badge {
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #6b7280;
-  border: 2px solid #e5e7eb;
+.home-platform-btn {
+  position: relative;
   cursor: pointer;
+  display: block;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
   font-family: inherit;
+}
+
+.home-platform-btn__face {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 54px;
+  padding: 0 0.75rem;
+  border-radius: 14px;
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  letter-spacing: 0.01em;
+  text-shadow: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(248, 250, 252, 0.92) 100%
+  );
+  border: 1.5px solid #e5e7eb;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    0 3px 12px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
   transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    transform 0.24s ease,
+    box-shadow 0.24s ease,
+    filter 0.24s ease,
+    border-color 0.24s ease,
+    color 0.24s ease,
+    background 0.24s ease;
 }
 
-.platform-badge:hover {
-  border-color: var(--badge-color);
-  color: var(--badge-color);
-  transform: translateY(-1px);
+.home-platform-btn__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  position: relative;
+  z-index: 1;
+  transition: color 0.24s ease, filter 0.24s ease;
 }
 
-.platform-badge--active {
-  background: var(--badge-bg);
-  color: var(--badge-color);
-  border-color: var(--badge-color);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+.home-platform-btn__icon-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+}
+
+.home-platform-btn__icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.home-platform-btn__label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+  text-align: left;
+  position: relative;
+  z-index: 1;
+}
+
+.home-platform-btn__badge {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  z-index: 4;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #111827;
+  font-size: 0.65rem;
+  font-weight: 800;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.home-platform-btn__gloss {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.24s ease;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.42) 0%,
+    rgba(255, 255, 255, 0.1) 38%,
+    transparent 52%
+  );
+}
+
+/* Unselected hover */
+.home-platform-btn:not(.selected):hover .home-platform-btn__face {
   transform: translateY(-2px);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
 
-.platform-badge--active.platform-badge--youtube {
-  box-shadow: 0 4px 16px rgba(255, 0, 0, 0.2);
+.home-platform-btn--youtube:not(.selected):hover .home-platform-btn__face {
+  border-color: rgba(255, 0, 0, 0.45);
+  box-shadow: 0 6px 18px rgba(255, 0, 0, 0.12);
 }
 
-.platform-badge--active.platform-badge--facebook {
-  box-shadow: 0 4px 16px rgba(24, 119, 242, 0.2);
+.home-platform-btn--tiktok:not(.selected):hover .home-platform-btn__face {
+  border-color: rgba(17, 17, 17, 0.35);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.1),
+    -1px 0 0 rgba(37, 244, 238, 0.3),
+    1px 0 0 rgba(254, 44, 85, 0.3);
 }
 
-.platform-badge--active.platform-badge--tiktok {
-  box-shadow: 0 4px 16px rgba(17, 24, 39, 0.15);
+.home-platform-btn--instagram:not(.selected):hover .home-platform-btn__face {
+  border-color: rgba(221, 42, 123, 0.45);
+  box-shadow: 0 6px 18px rgba(221, 42, 123, 0.14);
 }
 
-.platform-badge--active.platform-badge--instagram {
-  box-shadow: 0 4px 16px rgba(225, 48, 108, 0.22);
+.home-platform-btn--facebook:not(.selected):hover .home-platform-btn__face {
+  border-color: rgba(24, 119, 242, 0.45);
+  box-shadow: 0 6px 18px rgba(24, 119, 242, 0.14);
+}
+
+/* Selected — shared */
+.home-platform-btn.selected .home-platform-btn__face {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+  transform: translateY(-2px) scale(1.02);
+  filter: brightness(1.03);
+}
+
+.home-platform-btn.selected .home-platform-btn__icon {
+  color: #fff;
+}
+
+.home-platform-btn.selected .home-platform-btn__icon svg {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+}
+
+.home-platform-btn.selected .home-platform-btn__gloss {
+  opacity: 1;
+}
+
+.home-platform-btn.selected:hover .home-platform-btn__face {
+  filter: brightness(1.06);
+}
+
+/* YouTube selected */
+.home-platform-btn--youtube.selected .home-platform-btn__face {
+  background: linear-gradient(180deg, #ff4b4b 0%, #ff0000 55%, #c90000 100%);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 0 0 2px rgba(56, 189, 248, 0.45),
+    0 10px 28px rgba(220, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 0 16px rgba(255, 255, 255, 0.1);
+}
+
+/* TikTok selected */
+.home-platform-btn--tiktok.selected .home-platform-btn__face {
+  background: linear-gradient(135deg, #111111 0%, #050505 65%, #1f2937 100%);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.15),
+    0 10px 28px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 14px rgba(255, 255, 255, 0.06),
+    -2px -2px 0 rgba(37, 244, 238, 0.55),
+    2px 2px 0 rgba(254, 44, 85, 0.55);
+}
+
+/* Instagram selected */
+.home-platform-btn--instagram.selected .home-platform-btn__face {
+  background: linear-gradient(135deg, #f58529 0%, #dd2a7b 45%, #8134af 75%, #515bd4 100%);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.32),
+    0 10px 28px rgba(129, 52, 175, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 0 16px rgba(255, 255, 255, 0.1);
+}
+
+/* Facebook selected */
+.home-platform-btn--facebook.selected .home-platform-btn__face {
+  background: linear-gradient(180deg, #4c9cff 0%, #1877f2 55%, #0b5fd3 100%);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.38),
+    0 10px 28px rgba(24, 119, 242, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 0 16px rgba(255, 255, 255, 0.1);
+}
+
+.home-platform-btn:focus-visible .home-platform-btn__face {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 
 .platform-detect-hint {
@@ -98,12 +272,39 @@
 }
 
 @media (max-width: 480px) {
-  .platform-badge {
-    padding: 0.45rem 0.75rem;
-    font-size: 0.75rem;
+  .home-platform-options {
+    gap: 0.5rem;
+    max-width: 100%;
   }
 
-  .platform-badges {
-    gap: 0.4rem;
+  .home-platform-btn__face {
+    height: 52px;
+    padding: 0 0.65rem;
+    gap: 10px;
+    font-size: 0.875rem;
+    border-radius: 13px;
+  }
+
+  .home-platform-btn__icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .home-platform-btn__icon-img,
+  .home-platform-btn__icon svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-platform-btn__face {
+    transition: box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
+  }
+
+  .home-platform-btn:not(.selected):hover .home-platform-btn__face,
+  .home-platform-btn.selected .home-platform-btn__face {
+    transform: none;
+    filter: none;
   }
 }
