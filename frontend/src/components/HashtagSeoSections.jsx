@@ -8,12 +8,18 @@ export default function HashtagSeoSections({
   intro = [],
   howItWorks,
   platformTips,
+  examples,
   bestPractices,
   commonMistakes,
   faq = [],
   relatedLinks = [],
+  relatedLinksTitle = 'Related tools',
   showBottomCta = true,
+  disclaimer,
 }) {
+  const disclaimerText =
+    disclaimer ??
+    'Hashtags help organize posts and may help people discover your content. They do not guarantee views, followers, or ranking. Results depend on your content, audience, and each platform\'s systems.';
   return (
     <div className="hashtag-seo-sections">
       {intro.map((paragraph) => (
@@ -52,6 +58,22 @@ export default function HashtagSeoSections({
         </section>
       )}
 
+      {examples && (
+        <section className="hashtag-seo-block">
+          <h2>{examples.title}</h2>
+          {examples.paragraphs?.map((p) => (
+            <p key={p.slice(0, 48)}>{p}</p>
+          ))}
+          {examples.groups?.map((group) => (
+            <div key={group.label} className="hashtag-examples-group">
+              <h3>{group.label}</h3>
+              <p className="hashtag-examples-tags">{group.tags.join(' ')}</p>
+            </div>
+          ))}
+          {examples.note && <p className="hashtag-examples-note">{examples.note}</p>}
+        </section>
+      )}
+
       {bestPractices && (
         <section className="hashtag-seo-block">
           <h2>{bestPractices.title}</h2>
@@ -74,11 +96,7 @@ export default function HashtagSeoSections({
         </section>
       )}
 
-      <div className="notice-box hashtag-disclaimer">
-        Hashtags help organize posts and may help people discover your content. They do
-        not guarantee views, followers, or ranking. Results depend on your content,
-        audience, and each platform&apos;s systems.
-      </div>
+      <div className="notice-box hashtag-disclaimer">{disclaimerText}</div>
 
       {faq.length > 0 && (
         <section className="hashtag-seo-block">
@@ -96,7 +114,7 @@ export default function HashtagSeoSections({
 
       {relatedLinks.length > 0 && (
         <section className="hashtag-seo-block">
-          <h2>Related hashtag tools</h2>
+          <h2>{relatedLinksTitle}</h2>
           <ul className="hashtag-related-links">
             {relatedLinks.map(({ to, label }) => (
               <li key={to}>

@@ -8,6 +8,7 @@ import TiktokHashtagGenerator from './pages/TiktokHashtagGenerator';
 import InstagramHashtagGenerator from './pages/InstagramHashtagGenerator';
 import YoutubeHashtagGenerator from './pages/YoutubeHashtagGenerator';
 import FacebookHashtagGenerator from './pages/FacebookHashtagGenerator';
+import InstagramReelsDownloader from './pages/InstagramReelsDownloader';
 import DownloadGuide from './pages/DownloadGuide';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/instagram-hashtag-generator" element={<InstagramHashtagGenerator />} />
         <Route path="/youtube-hashtag-generator" element={<YoutubeHashtagGenerator />} />
         <Route path="/facebook-hashtag-generator" element={<FacebookHashtagGenerator />} />
+        <Route path="/instagram-reels-downloader" element={<InstagramReelsDownloader />} />
         <Route path="/download-guide" element={<DownloadGuide />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/contact" element={<Contact />} />

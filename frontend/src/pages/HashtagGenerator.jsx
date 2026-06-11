@@ -6,19 +6,12 @@ import HashtagForm from '../components/HashtagForm';
 import HashtagFloatingBg from '../components/HashtagFloatingBg';
 import HashtagSeoSections from '../components/HashtagSeoSections';
 import { PAGE_SEO } from '../constants/seo';
-import { HASHTAG_GENERATOR_SEO } from '../constants/hashtagLandingContent';
+import { HASHTAG_GENERATOR_SEO, SEO_CROSS_LINKS } from '../constants/hashtagLandingContent';
 import { webApplicationSchema, faqPageSchema } from '../constants/structuredData';
 import '../components/SeoProse.css';
 import '../components/HashtagLanding.css';
 import './FAQ.css';
 import './HashtagGenerator.css';
-
-const PLATFORM_GUIDES = [
-  { to: '/tiktok-hashtag-generator', label: 'TikTok hashtag generator guide' },
-  { to: '/instagram-hashtag-generator', label: 'Instagram hashtag generator guide' },
-  { to: '/youtube-hashtag-generator', label: 'YouTube hashtag generator guide' },
-  { to: '/facebook-hashtag-generator', label: 'Facebook hashtag generator guide' },
-];
 
 export default function HashtagGenerator() {
   const seo = PAGE_SEO.hashtagGenerator;
@@ -43,18 +36,20 @@ export default function HashtagGenerator() {
             <div className="container seo-content card hashtag-landing-prose">
               <HashtagSeoSections {...HASHTAG_GENERATOR_SEO} showBottomCta={false} />
               <section className="hashtag-seo-block">
-                <h2>Platform hashtag guides</h2>
+                <h2>Related tools</h2>
                 <ul className="hashtag-related-links">
-                  {PLATFORM_GUIDES.map(({ to, label }) => (
-                    <li key={to}>
-                      <Link to={to}>{label}</Link>
-                    </li>
-                  ))}
+                  {SEO_CROSS_LINKS.filter((l) => l.to !== '/hashtag-generator').map(
+                    ({ to, label }) => (
+                      <li key={to}>
+                        <Link to={to}>{label}</Link>
+                      </li>
+                    ),
+                  )}
                 </ul>
               </section>
               <p>
-                <Link to="/">Video downloader</Link> · <Link to="/faq">FAQ</Link> ·{' '}
-                <Link to="/download-guide">Download guide</Link>
+                <Link to="/instagram-reels-downloader">Instagram Reels downloader</Link> ·{' '}
+                <Link to="/">Video downloader</Link> · <Link to="/faq">FAQ</Link>
               </p>
             </div>
           </section>

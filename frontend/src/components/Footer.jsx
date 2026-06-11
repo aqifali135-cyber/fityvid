@@ -4,6 +4,7 @@ import './Footer.css';
 
 const SITE_LINKS = [
   { to: '/', label: 'Home' },
+  { to: '/instagram-reels-downloader', label: 'Instagram Reels Downloader' },
   { to: '/faq', label: 'FAQ' },
   { to: '/contact', label: 'Contact' },
   { to: '/about', label: 'About Us' },

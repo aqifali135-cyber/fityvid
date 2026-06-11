@@ -9,8 +9,21 @@ export const HASHTAG_RELATED_ALL = [
   { to: '/faq', label: 'FityVid FAQ' },
 ];
 
+/** Cross-links for Search Console priority pages */
+export const SEO_CROSS_LINKS = [
+  { to: '/hashtag-generator', label: 'Free hashtag generator' },
+  { to: '/facebook-hashtag-generator', label: 'Facebook hashtag generator' },
+  { to: '/youtube-hashtag-generator', label: 'YouTube hashtag generator' },
+  { to: '/instagram-hashtag-generator', label: 'Instagram hashtag generator' },
+  { to: '/instagram-reels-downloader', label: 'Instagram Reels downloader' },
+];
+
 function relatedExcept(currentPath) {
   return HASHTAG_RELATED_ALL.filter((link) => link.to !== currentPath);
+}
+
+export function crossLinksExcept(currentPath) {
+  return SEO_CROSS_LINKS.filter((link) => link.to !== currentPath);
 }
 
 export const TIKTOK_HASHTAG_LANDING = {
@@ -179,177 +192,240 @@ export const INSTAGRAM_HASHTAG_LANDING = {
         a: 'No. FityVid is independent and not endorsed by Meta or Instagram.',
       },
     ],
-    relatedLinks: relatedExcept('/instagram-hashtag-generator'),
+    examples: {
+      title: 'Example Instagram hashtags',
+      paragraphs: [
+        'These sample tags illustrate how niche and topic tags might look for common Reels and post themes. Always choose tags that match your actual content.',
+      ],
+      groups: [
+        {
+          label: 'Fitness Reel',
+          tags: ['#HomeWorkout', '#FitnessReels', '#BeginnerFitness', '#HealthyHabits'],
+        },
+        {
+          label: 'Food carousel',
+          tags: ['#EasyRecipes', '#MealPrep', '#CookingAtHome', '#WeeknightDinner'],
+        },
+        {
+          label: 'Local business post',
+          tags: ['#ShopLocal', '#SmallBusiness', '#BehindTheScenes', '#YourCityName'],
+        },
+      ],
+      note: 'Replace generic location tags with your real city or neighborhood when relevant.',
+    },
+    relatedLinks: crossLinksExcept('/instagram-hashtag-generator'),
   },
 };
 
 export const YOUTUBE_HASHTAG_LANDING = {
   hero: {
-    title: 'YouTube Hashtag Generator Guide',
+    title: 'YouTube Hashtag Generator',
     subtitle:
-      'Choose YouTube hashtags for videos and Shorts. Generate ideas on FityVid, then pick tags that match your title and topic.',
+      'Free YouTube hashtags generator for long-form videos and Shorts. Plan YouTube video hashtags on FityVid, then add the best fits to your description.',
     ctaLabel: 'Generate YouTube hashtags',
   },
   content: {
     intro: [
-      'On YouTube, hashtags can appear above the title and link to a hashtag search page. They help group public videos around a theme and can give viewers another path to related content. They are not a replacement for titles, thumbnails, or watch time.',
-      'Use this page to plan YouTube hashtags for long-form videos and Shorts, and to learn how FityVid’s free generator suggests tags from your topic. Always confirm tags are relevant to the video you publish.',
-      'FityVid does not guarantee rankings, subscribers, or Shorts feed placement. YouTube’s systems weigh many factors beyond hashtags.',
+      'A YouTube hashtag generator helps you brainstorm tags before you publish. On YouTube, hashtags can appear above the video title and link to a hashtag results page. They group public videos by topic and may give viewers another way to browse related uploads—but they are not a substitute for clear titles, strong thumbnails, or watch time.',
+      'FityVid works as a free YouTube hashtags generator: enter your subject, select YouTube, and review suggested YouTube video hashtags for your niche. Use this page to learn how to make hashtags on YouTube responsibly, including for Shorts, without stuffing unrelated terms into your metadata.',
+      'No tool can promise rankings, subscribers, or viral Shorts placement. YouTube weighs many signals beyond tags. FityVid is not affiliated with YouTube or Google.',
     ],
     howItWorks: {
-      title: 'How the YouTube hashtag generator works',
+      title: 'How to make hashtags on YouTube with FityVid',
       paragraphs: [
-        'Enter your video subject in FityVid’s hashtag generator, select YouTube, and choose a style. The tool outputs suggested hashtags you can paste into your description or title area according to YouTube’s current display rules.',
-        'YouTube may show up to three hashtags prominently above the title when they meet platform requirements. Prioritize the most accurate tags rather than using every suggestion.',
+        'Open FityVid’s hashtag generator, type a short topic (for example “beginner guitar lesson” or “budget travel Europe”), choose YouTube as the platform, and pick a style such as niche or mixed. The YouTube hashtag generator returns a list you can copy into your video description.',
+        'YouTube may display up to three hashtags above the title when they follow current platform rules. Pick the tags that honestly describe this upload rather than pasting the entire list.',
       ],
       steps: [
-        'Summarize your video topic in the generator.',
-        'Select YouTube and generate a tag list.',
-        'Pick the top tags that match your title and content.',
-        'Add them to your description (and title when appropriate) and publish.',
+        'Describe your video or Short in plain language.',
+        'Select YouTube in the generator and generate hashtags.',
+        'Choose two or three leading tags that match your title and thumbnail.',
+        'Add remaining relevant tags in the description, then publish.',
       ],
     },
     platformTips: {
-      title: 'YouTube hashtag tips',
+      title: 'YouTube video hashtags and Shorts hashtags',
       paragraphs: [
-        'YouTube hashtags work best when they reinforce the same topic as your title and thumbnail. Misleading tags can frustrate viewers and hurt trust.',
+        'Long-form videos and YouTube Shorts share hashtag mechanics, but Shorts often depend more on the opening hook and retention. Keep YouTube Shorts hashtags tightly aligned with what viewers see in the first seconds.',
       ],
       list: [
-        'Place your strongest topic hashtag where YouTube can surface it per current guidelines.',
-        'Use tags for series names, events, or clear subjects viewers already search.',
-        'For Shorts, keep tags aligned with the hook shown in the first seconds.',
-        'Avoid overloading descriptions with dozens of unrelated hash symbols.',
-        'Review YouTube Creator Academy and policy pages when rules change.',
+        'Use YouTube video hashtags that match the spoken topic and on-screen text.',
+        'For tutorials, include subject tags (#PythonTutorial) plus format tags (#HowTo) when accurate.',
+        'For Shorts, favor short, clear tags over long unrelated chains.',
+        'Check the hashtag page on YouTube before attaching it to see what content already appears.',
+        'Follow YouTube spam and misleading metadata policies—irrelevant tags can hurt trust.',
       ],
+    },
+    examples: {
+      title: 'Example YouTube hashtags',
+      paragraphs: [
+        'Sample YouTube hashtags for illustration only. Edit every list so it reflects your specific upload.',
+      ],
+      groups: [
+        {
+          label: 'How-to video',
+          tags: ['#HowToEditVideo', '#VideoEditingTips', '#BeginnerTutorial'],
+        },
+        {
+          label: 'YouTube Shorts',
+          tags: ['#Shorts', '#QuickTip', '#PhonePhotography', '#CreativeShorts'],
+        },
+        {
+          label: 'Gaming upload',
+          tags: ['#Gaming', '#LetsPlay', '#IndieGames', '#Gameplay'],
+        },
+      ],
+      note: 'YouTube may surface up to three hashtags above the title; choose your strongest topic tags first.',
     },
     bestPractices: {
       title: 'Best practices',
       items: [
-        'Research what a hashtag page shows before you attach it to a video.',
-        'Keep branding consistent with one campaign tag across a playlist or series.',
-        'Combine hashtags with keyword-rich titles and descriptions written for people.',
-        'Update tags on future uploads when your channel niche evolves.',
-        'Monitor retention and traffic sources, not hashtag count alone.',
+        'Lead with tags that mirror your title keyword and thumbnail promise.',
+        'Keep one branded tag consistent across a series or playlist when you use branding.',
+        'Write descriptions for people first; add hashtags where they read naturally.',
+        'Compare traffic sources in YouTube Analytics instead of judging tags alone.',
+        'Update your YouTube hashtags generator workflow when you pivot niches.',
       ],
     },
     commonMistakes: {
       title: 'Common mistakes',
       items: [
-        'Stuffing descriptions with unrelated trending tags.',
-        'Using more than three prominent tags when only the most relevant should lead.',
-        'Expecting hashtags to fix click-through issues from weak thumbnails.',
-        'Copying competitor tag lists for a different subject matter.',
-        'Violating YouTube spam or misleading metadata policies.',
+        'Treating a YouTube hashtags generator output as final without editing.',
+        'Stuffing descriptions with trending tags unrelated to the video.',
+        'Using more than three prominent tags when only the top matches deserve emphasis.',
+        'Expecting YouTube Shorts hashtags alone to fix weak hooks or low retention.',
+        'Copying a competitor’s tag block for a different subject or audience.',
       ],
     },
     faq: [
       {
-        q: 'How many hashtags should I use on YouTube?',
-        a: 'YouTube may highlight up to three hashtags above the title when eligible. Many creators use a focused set in the description. Relevance matters more than quantity.',
+        q: 'What is a YouTube hashtag generator?',
+        a: 'It is a tool that suggests hashtag ideas from a topic you provide. FityVid’s generator lets you pick YouTube as the platform and copy results into your description.',
       },
       {
-        q: 'Do YouTube hashtags help Shorts?',
-        a: 'Shorts can include hashtags for context, but distribution relies heavily on engagement and viewer behavior. Tags alone do not control Shorts reach.',
+        q: 'How many YouTube video hashtags should I use?',
+        a: 'Many creators emphasize a few highly relevant tags. YouTube may show up to three above the title when eligible. Quality and accuracy matter more than quantity.',
       },
       {
-        q: 'Can FityVid guarantee my video will rank?',
-        a: 'No. FityVid suggests tags for planning. Rankings and suggested traffic depend on YouTube’s algorithms and your content performance.',
+        q: 'Do YouTube Shorts hashtags work differently?',
+        a: 'Shorts use the same hashtag format, but reach depends heavily on engagement and viewer behavior. Use Shorts hashtags that describe the clip, not generic viral blocks.',
       },
       {
-        q: 'Where should I put hashtags on YouTube?',
-        a: 'Most creators add hashtags in the video description. Follow YouTube’s help documentation for where tags may appear above the title.',
+        q: 'Can this YouTube hashtags generator guarantee views?',
+        a: 'No. FityVid provides planning suggestions only. Views and rankings depend on your content, audience, and YouTube’s systems.',
       },
       {
-        q: 'Is FityVid affiliated with YouTube or Google?',
-        a: 'No. FityVid is not affiliated with YouTube or Google.',
+        q: 'Where do I put hashtags on YouTube?',
+        a: 'Most creators add them in the video description. See YouTube’s help center for when tags may also appear above the title.',
       },
     ],
-    relatedLinks: relatedExcept('/youtube-hashtag-generator'),
+    relatedLinks: crossLinksExcept('/youtube-hashtag-generator'),
   },
 };
 
 export const FACEBOOK_HASHTAG_LANDING = {
   hero: {
-    title: 'Facebook Hashtag Generator Guide',
+    title: 'Facebook Hashtag Generator',
     subtitle:
-      'Plan Facebook hashtags for Page posts, reels, and videos. Use FityVid for ideas, then publish tags that fit your message.',
+      'Free Facebook hashtag generator for Page posts, Facebook Reels, and video uploads. Get Facebook video hashtag ideas, then publish tags that fit your message.',
     ctaLabel: 'Generate Facebook hashtags',
   },
   content: {
     intro: [
-      'Facebook hashtags link posts to topic feeds and search results on the platform. They can help people who already use Facebook discover public conversations around a subject, especially for Pages and public creators.',
-      'This page walks through sensible Facebook hashtag use and how FityVid’s generator produces tag suggestions from your topic. Review each tag before posting—Facebook prioritizes meaningful engagement and clear context.',
-      'Hashtags alone will not guarantee reach on Facebook. Paid distribution, followers, shares, and content quality all influence who sees your post.',
+      'A Facebook hashtag generator helps you plan tags before you publish a Page post, Reel, or video. Facebook hashtags connect posts to topic feeds and in-app search, which can help people already on Facebook find public conversations around a subject. They work best when your post text, media, and tags all describe the same thing.',
+      'FityVid’s free Facebook hashtag generator turns a short topic into Facebook post hashtags and Facebook video hashtags you can edit. Whether you need Facebook reel hashtags for a clip or Facebook video hashtag ideas for a longer upload, start with relevant suggestions—then remove anything that does not match your content.',
+      'Hashtags do not guarantee reach, followers, or viral results on Facebook. Distribution also depends on your audience, content quality, shares, and whether you use paid tools. FityVid is not affiliated with Facebook or Meta.',
     ],
     howItWorks: {
       title: 'How the Facebook hashtag generator works',
       paragraphs: [
-        'Describe your post in FityVid’s hashtag generator, choose Facebook as the platform, and generate a list. Copy the tags into your post text where they read naturally, often at the end of the message.',
-        'Facebook audiences vary by Page, group, and profile settings. Public Pages benefit most from consistent topic tags; always respect privacy settings and community standards.',
+        'Open FityVid’s hashtag generator, describe your post or video (for example “small bakery grand opening” or “home workout for seniors”), select Facebook, and generate a list. The tool suggests Facebook post hashtags and video-oriented tags based on your topic and style preference.',
+        'Copy the results into your Facebook composer at the end of the post or in the Reel caption. Public Pages and creators benefit most when tags are readable and on-topic. Private profiles and restricted posts follow different visibility rules—tags do not override privacy settings.',
       ],
       steps: [
-        'Enter your post topic on the hashtag generator.',
-        'Select Facebook and your preferred tag style.',
-        'Edit the list to match your post language and audience.',
-        'Publish and monitor comments and shares for feedback.',
+        'Enter your Facebook post or video topic in the generator.',
+        'Select Facebook and choose a tag style (niche, mixed, etc.).',
+        'Review Facebook video hashtag ideas and trim irrelevant tags.',
+        'Publish and check comments and insights over time—not overnight spikes alone.',
       ],
     },
     platformTips: {
-      title: 'Facebook hashtag tips',
+      title: 'Facebook post hashtags, video hashtags, and Reel hashtags',
       paragraphs: [
-        'On Facebook, a short list of clear tags often works better than a long block copied from other networks. Tone and clarity matter for communities that skew conversational.',
+        'Facebook post hashtags suit text updates, link shares, and photo albums. Facebook video hashtags and Facebook reel hashtags should mirror what viewers hear and see in the first moments. A short, clear set usually reads better than a long block copied from Instagram.',
       ],
       list: [
-        'Use one to three focused tags for many Page posts; add more only when each tag adds context.',
-        'Match hashtags to events, locations, or campaigns you discuss in the post.',
-        'For video and Reels, align tags with the spoken topic and on-screen subject.',
-        'Search the hashtag on Facebook to see what kind of content already appears.',
-        'Avoid tags that confuse personal profiles with Page branding.',
+        'Use one to three core Facebook post hashtags for many Page updates.',
+        'For Facebook video hashtags, match the spoken subject and on-screen action.',
+        'For Facebook reel hashtags, keep tags aligned with the hook and vertical format.',
+        'Search each hashtag on Facebook before publishing to see existing content.',
+        'Separate campaign tags (#SummerSale2026) from evergreen topic tags (#GardeningTips).',
       ],
+    },
+    examples: {
+      title: 'Example Facebook hashtags',
+      paragraphs: [
+        'Sample Facebook video hashtag ideas and post tags for common Page themes. Customize every list for your niche and location.',
+      ],
+      groups: [
+        {
+          label: 'Facebook post hashtags (local business)',
+          tags: ['#ShopLocal', '#SmallBusiness', '#GrandOpening', '#YourTown'],
+        },
+        {
+          label: 'Facebook video hashtags (how-to clip)',
+          tags: ['#DIYHomeRepair', '#HowTo', '#HomeMaintenance', '#QuickTip'],
+        },
+        {
+          label: 'Facebook reel hashtags (fitness)',
+          tags: ['#FitnessReels', '#HomeWorkout', '#HealthyLiving', '#BeginnerWorkout'],
+        },
+      ],
+      note: 'Swap placeholder location tags with your real city or neighborhood when relevant.',
     },
     bestPractices: {
       title: 'Best practices',
       items: [
-        'Write the post for your audience first, then add hashtags.',
-        'Keep branded tags stable across a campaign for easier browsing.',
-        'Use native Facebook insights to see what content earns reach over time.',
-        'Respect group rules—some communities restrict or ban hashtag spam.',
-        'Pair hashtags with clear links, images, or video descriptions when relevant.',
+        'Write the post for humans first, then add Facebook hashtags at the end.',
+        'Keep branded campaign tags consistent across a series of Reels or videos.',
+        'Pair Facebook video hashtags with a clear title line in the post text.',
+        'Use Meta Business Suite insights to learn what content earns engagement over time.',
+        'Respect group and Page rules—some communities limit promotional tags.',
       ],
     },
     commonMistakes: {
       title: 'Common mistakes',
       items: [
-        'Pasting Instagram-style thirty-tag blocks onto Facebook posts.',
-        'Using trending tags unrelated to your Page niche.',
-        'Expecting hashtags to replace paid reach for new Pages.',
-        'Ignoring privacy settings while chasing public hashtag feeds.',
-        'Repeating the same promotional tag without varied content.',
+        'Pasting thirty Instagram tags onto a Facebook post.',
+        'Using Facebook video hashtag ideas that do not match the footage.',
+        'Expecting Facebook reel hashtags alone to replace weak hooks or audio.',
+        'Adding trending tags unrelated to your Page niche or audience.',
+        'Assuming tags guarantee reach without quality content or community interaction.',
       ],
     },
     faq: [
       {
-        q: 'How many hashtags should I use on Facebook?',
-        a: 'Many Pages use a few relevant tags. There is no universal perfect number—clarity and fit with the post matter most.',
+        q: 'What is a Facebook hashtag generator?',
+        a: 'It is a planning tool that suggests hashtags from a topic you enter. FityVid lets you select Facebook and copy edited results into posts, videos, or Reels.',
       },
       {
-        q: 'Do Facebook hashtags work in groups?',
-        a: 'Groups may allow hashtags, but admins often set their own rules. Check group guidelines before posting tag-heavy content.',
+        q: 'How many Facebook post hashtags should I use?',
+        a: 'Many Pages use a few focused tags. Clarity matters more than volume. Add more only when each tag adds real context.',
       },
       {
-        q: 'Will FityVid hashtags boost my Page reach?',
-        a: 'FityVid provides suggestions only. Reach depends on content, audience, and Facebook’s distribution systems—not tags alone.',
+        q: 'Do Facebook video hashtags help discovery?',
+        a: 'They may help organize and browse video topics on Facebook, but they do not guarantee views or shares. Content and audience fit still matter most.',
       },
       {
-        q: 'Can I use the same tags on Facebook and Instagram?',
-        a: 'You can reuse tags when the topic is identical, but each platform’s audience behaves differently. Tailor lists when formats differ.',
+        q: 'Can I use the same Facebook reel hashtags on every Reel?',
+        a: 'Reuse branded tags if you run a series, but change topic tags when each Reel covers a different subject.',
       },
       {
         q: 'Is FityVid affiliated with Facebook or Meta?',
-        a: 'No. FityVid is independent and not affiliated with Meta.',
+        a: 'No. FityVid is an independent tool and is not endorsed by Meta.',
       },
     ],
-    relatedLinks: relatedExcept('/facebook-hashtag-generator'),
+    relatedLinks: crossLinksExcept('/facebook-hashtag-generator'),
   },
 };
 
@@ -425,5 +501,5 @@ export const HASHTAG_GENERATOR_SEO = {
       a: 'Sometimes core topic tags carry over, but each platform has different norms. Generate per platform or read our platform guides and adjust.',
     },
   ],
-  relatedLinks: HASHTAG_RELATED_ALL.filter((link) => link.to !== '/hashtag-generator'),
+  relatedLinks: crossLinksExcept('/hashtag-generator'),
 };

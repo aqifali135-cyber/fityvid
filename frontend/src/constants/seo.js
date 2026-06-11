@@ -47,15 +47,21 @@ export const PAGE_SEO = {
   },
   youtubeHashtagGenerator: {
     path: '/youtube-hashtag-generator',
-    title: 'YouTube Hashtag Generator — Tags for Videos & Shorts | FityVid',
+    title: 'YouTube Hashtag Generator — Free YouTube Hashtags Generator for Videos & Shorts',
     description:
-      'Plan YouTube hashtags for videos and Shorts with FityVid’s guide and free generator. Relevant tags may help topic browsing; they do not guarantee rankings.',
+      'Free YouTube hashtag generator for video and Shorts. Learn how to make hashtags on YouTube, get YouTube video hashtags ideas, and plan tags without guaranteed rankings.',
   },
   facebookHashtagGenerator: {
     path: '/facebook-hashtag-generator',
-    title: 'Facebook Hashtag Generator — Tags for Page Posts & Video | FityVid',
+    title: 'Facebook Hashtag Generator — Video, Post & Reel Hashtag Ideas | FityVid',
     description:
-      'Facebook hashtag tips and free tag suggestions on FityVid. Plan Page and video posts with relevant hashtags—tags alone do not guarantee reach.',
+      'Free Facebook hashtag generator for Page posts, videos, and Reels. Get Facebook video hashtags and post hashtag ideas—tags help discovery but do not guarantee reach.',
+  },
+  instagramReelsDownloader: {
+    path: '/instagram-reels-downloader',
+    title: 'Instagram Reels Downloader — Download Instagram Videos Online | FityVid',
+    description:
+      'Instagram video downloader for public Reels and posts. Paste a link to download Instagram Reels when supported. Public content only—no private or copyrighted downloads.',
   },
   faq: {
     path: '/faq',

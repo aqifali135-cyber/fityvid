@@ -54,3 +54,29 @@
   max-width: 720px;
   margin: 0 auto;
 }
+
+.hashtag-examples-group {
+  margin: 1.25rem 0;
+}
+
+.hashtag-examples-group h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.5rem;
+}
+
+.hashtag-examples-tags {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #0ea5e9;
+  margin: 0;
+  word-break: break-word;
+}
+
+.hashtag-examples-note {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-style: italic;
+  margin: 1rem 0 0;
+}
