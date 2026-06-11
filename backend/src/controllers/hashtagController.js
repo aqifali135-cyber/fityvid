@@ -11,8 +11,15 @@ export function generateHashtagHandler(req, res) {
     });
   }
 
-  const { topic, platform, type, count } = validation.data;
-  const { hashtags, captionIdea } = generateHashtags({ topic, platform, type, count });
+  const { topic, platform, type, count, contentType, goal } = validation.data;
+  const { hashtags, groups, captionIdea } = generateHashtags({
+    topic,
+    platform,
+    type,
+    count,
+    contentType,
+    goal,
+  });
 
   return res.json({
     success: true,
@@ -20,7 +27,10 @@ export function generateHashtagHandler(req, res) {
     platform,
     type,
     count,
+    contentType,
+    goal,
     hashtags,
+    groups,
     captionIdea,
   });
 }

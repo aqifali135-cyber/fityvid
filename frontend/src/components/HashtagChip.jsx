@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './HashtagChip.css';
 
-export default function HashtagChip({ tag, onCopy }) {
+export default function HashtagChip({ tag, badge, onCopy }) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -17,6 +17,7 @@ export default function HashtagChip({ tag, onCopy }) {
 
   return (
     <span className="hashtag-chip">
+      {badge && <span className="hashtag-chip-badge">{badge}</span>}
       <span className="hashtag-text">{tag}</span>
       <button
         type="button"

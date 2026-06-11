@@ -88,6 +88,43 @@
   background: linear-gradient(135deg, var(--peach), var(--pink-light));
 }
 
+.example-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.example-keywords-label {
+  font-size: 0.8rem;
+  color: var(--gray-400);
+  font-weight: 500;
+}
+
+.example-keyword-chip {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  background: linear-gradient(135deg, #fff5f8 0%, #f0f7ff 100%);
+  border: 1px solid rgba(255, 182, 193, 0.35);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.example-keyword-chip:hover {
+  border-color: var(--cyan);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.08);
+}
+
+.example-keyword-chip:focus-visible {
+  outline: 2px solid var(--cyan-deep);
+  outline-offset: 2px;
+}
+
 .hashtag-form-tip {
   margin: 1rem 0 0;
   font-size: 0.8rem;
@@ -103,6 +140,15 @@
   .hashtag-form {
     padding: 1.25rem;
   }
+
+  .example-keywords {
+    gap: 0.4rem;
+  }
+
+  .example-keyword-chip {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.65rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -112,6 +158,10 @@
 
   .platform-options .option-card:hover span,
   .platform-options .option-card.selected span {
+    transform: none;
+  }
+
+  .example-keyword-chip:hover {
     transform: none;
   }
 }

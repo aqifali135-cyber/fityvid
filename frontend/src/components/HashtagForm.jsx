@@ -10,6 +10,22 @@ const PLATFORMS = [
   { value: 'facebook', label: 'Facebook' },
 ];
 
+const CONTENT_TYPES = [
+  { value: 'post', label: 'Post' },
+  { value: 'reel_short', label: 'Reel / Short' },
+  { value: 'video', label: 'Video' },
+  { value: 'story', label: 'Story' },
+  { value: 'caption', label: 'Caption' },
+];
+
+const HASHTAG_GOALS = [
+  { value: 'more_reach', label: 'More Reach' },
+  { value: 'niche_audience', label: 'Niche Audience' },
+  { value: 'brand_awareness', label: 'Brand Awareness' },
+  { value: 'local_audience', label: 'Local Audience' },
+  { value: 'trending_topic', label: 'Trending Topic' },
+];
+
 const TYPES = [
   { value: 'trending', label: 'Trending' },
   { value: 'niche', label: 'Niche' },
@@ -20,9 +36,19 @@ const TYPES = [
 
 const COUNTS = [10, 20, 30, 50];
 
+const EXAMPLE_KEYWORDS = [
+  'fitness reels',
+  'food vlog',
+  'gaming shorts',
+  'travel video',
+  'small business tips',
+];
+
 export default function HashtagForm() {
   const [topic, setTopic] = useState('');
   const [platform, setPlatform] = useState('');
+  const [contentType, setContentType] = useState('post');
+  const [goal, setGoal] = useState('more_reach');
   const [type, setType] = useState('mixed');
   const [count, setCount] = useState(30);
   const [error, setError] = useState('');
@@ -48,6 +74,8 @@ export default function HashtagForm() {
       const data = await generateHashtags({
         topic: topic.trim(),
         platform,
+        contentType,
+        goal,
         type,
         count,
       });
@@ -71,6 +99,11 @@ export default function HashtagForm() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function handleExampleClick(keyword) {
+    setTopic(keyword);
+    setError('');
+  }
+
   return (
     <div className="hashtag-form-wrapper">
       <form className="hashtag-form card" onSubmit={handleSubmit}>
@@ -85,6 +118,19 @@ export default function HashtagForm() {
             onChange={(e) => setTopic(e.target.value)}
             maxLength={80}
           />
+          <div className="example-keywords">
+            <span className="example-keywords-label">Try:</span>
+            {EXAMPLE_KEYWORDS.map((keyword) => (
+              <button
+                key={keyword}
+                type="button"
+                className="example-keyword-chip"
+                onClick={() => handleExampleClick(keyword)}
+              >
+                {keyword}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="form-group">
@@ -100,6 +146,45 @@ export default function HashtagForm() {
                   onChange={() => setPlatform(p.value)}
                 />
                 <span>{p.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-group">
+          <span className="label">Content Type</span>
+          <div className="option-grid type-options">
+            {CONTENT_TYPES.map((item) => (
+              <label
+                key={item.value}
+                className={`option-chip ${contentType === item.value ? 'selected' : ''}`}
+              >
+                <input
+                  type="radio"
+                  name="contentType"
+                  value={item.value}
+                  checked={contentType === item.value}
+                  onChange={() => setContentType(item.value)}
+                />
+                <span>{item.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-group">
+          <span className="label">Hashtag Goal</span>
+          <div className="option-grid goal-options">
+            {HASHTAG_GOALS.map((item) => (
+              <label key={item.value} className={`option-chip ${goal === item.value ? 'selected' : ''}`}>
+                <input
+                  type="radio"
+                  name="goal"
+                  value={item.value}
+                  checked={goal === item.value}
+                  onChange={() => setGoal(item.value)}
+                />
+                <span>{item.label}</span>
               </label>
             ))}
           </div>

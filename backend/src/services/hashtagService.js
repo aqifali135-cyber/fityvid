@@ -17,6 +17,22 @@ const TYPE_MODIFIERS = {
   mixed: ['love', 'life', 'daily', 'inspo', 'goals', 'vibes'],
 };
 
+const CONTENT_TYPE_SUFFIXES = {
+  post: ['post', 'update', 'feed', 'share'],
+  reel_short: ['reels', 'shorts', 'short', 'clip', 'vertical'],
+  video: ['video', 'vlog', 'watch', 'fullvideo'],
+  story: ['story', 'stories', 'bts', 'behindthescenes'],
+  caption: ['caption', 'quote', 'thoughts', 'mood'],
+};
+
+const GOAL_MODIFIERS = {
+  more_reach: ['trending', 'viral', 'discover', 'explore', 'popular'],
+  niche_audience: ['community', 'niche', 'lover', 'enthusiast', 'fans'],
+  brand_awareness: ['brand', 'official', 'team', 'business', 'creator'],
+  local_audience: ['local', 'nearme', 'community', 'shoplocal', 'city'],
+  trending_topic: ['trending', 'hot', 'now', 'topic', '2026'],
+};
+
 const GENERIC_SUFFIXES = [
   'motivation', 'inspiration', 'tips', 'hacks', 'ideas', 'life', 'daily',
   'lover', 'community', 'goals', 'vibes', 'world', 'time', 'style', 'hub',
@@ -46,6 +62,13 @@ const CAPTION_TEMPLATES = {
   ],
 };
 
+const GROUP_META = [
+  { key: 'trending', label: 'Trending', badge: 'High Reach' },
+  { key: 'niche', label: 'Niche', badge: 'Niche' },
+  { key: 'low_competition', label: 'Low Competition', badge: 'Low Competition' },
+  { key: 'platform_specific', label: 'Platform Specific', badge: null },
+];
+
 function normalizeTopic(topic) {
   return topic
     .toLowerCase()
@@ -60,7 +83,11 @@ function toHashtag(word) {
   return `#${clean}`;
 }
 
-function buildCandidates(topic, platform, type) {
+function shuffle(items) {
+  return [...items].sort(() => Math.random() - 0.5);
+}
+
+function buildCandidates(topic, platform, type, contentType = 'post', goal = 'more_reach') {
   const base = normalizeTopic(topic);
   const words = topic.toLowerCase().split(/\s+/).filter(Boolean);
   const candidates = new Set();
@@ -76,6 +103,17 @@ function buildCandidates(topic, platform, type) {
   (PLATFORM_SUFFIXES[platform] || []).forEach((s) => {
     candidates.add(`${base}${s}`);
     candidates.add(`${s}${base}`);
+  });
+
+  (CONTENT_TYPE_SUFFIXES[contentType] || []).forEach((s) => {
+    candidates.add(`${base}${s}`);
+    words.forEach((w) => candidates.add(`${w}${s}`));
+  });
+
+  (GOAL_MODIFIERS[goal] || []).forEach((s) => {
+    candidates.add(`${base}${s}`);
+    candidates.add(`${s}${base}`);
+    words.forEach((w) => candidates.add(`${w}${s}`));
   });
 
   (TYPE_MODIFIERS[type] || []).forEach((s) => {
@@ -96,6 +134,65 @@ function buildCandidates(topic, platform, type) {
     .filter((tag) => tag.length > 2 && tag.length <= 30);
 }
 
+function buildPlatformSpecific(topic, platform, contentType = 'post') {
+  const base = normalizeTopic(topic);
+  const words = topic.toLowerCase().split(/\s+/).filter(Boolean);
+  const candidates = new Set();
+  const platformWords = PLATFORM_SUFFIXES[platform] || [];
+  const contentWords = CONTENT_TYPE_SUFFIXES[contentType] || [];
+
+  platformWords.forEach((s) => {
+    candidates.add(`${base}${s}`);
+    candidates.add(`${s}${base}`);
+    words.forEach((w) => {
+      candidates.add(`${w}${s}`);
+      candidates.add(`${s}${w}`);
+    });
+  });
+
+  contentWords.forEach((s) => {
+    platformWords.forEach((p) => {
+      candidates.add(`${base}${p}${s}`);
+      candidates.add(`${p}${base}`);
+    });
+  });
+
+  return [...candidates]
+    .map(toHashtag)
+    .filter(Boolean)
+    .filter((tag) => tag.length > 2 && tag.length <= 30);
+}
+
+function pickFromPool(pool, count, used) {
+  const picked = [];
+  for (const tag of shuffle(pool)) {
+    if (picked.length >= count) break;
+    if (!used.has(tag)) {
+      used.add(tag);
+      picked.push(tag);
+    }
+  }
+  return picked;
+}
+
+function fillRemaining(topic, count, used) {
+  const hashtags = [];
+  const base = normalizeTopic(topic);
+  let i = 0;
+
+  while (hashtags.length < count && i < 120) {
+    const suffix = TYPE_MODIFIERS.mixed[i % TYPE_MODIFIERS.mixed.length];
+    const extra = toHashtag(`${base}${suffix}${i}`);
+    if (extra && !used.has(extra)) {
+      used.add(extra);
+      hashtags.push(extra);
+    }
+    i += 1;
+  }
+
+  return hashtags;
+}
+
 function pickCaption(topic, platform) {
   const templates = CAPTION_TEMPLATES[platform] || CAPTION_TEMPLATES.instagram;
   const template = templates[Math.floor(Math.random() * templates.length)];
@@ -103,30 +200,69 @@ function pickCaption(topic, platform) {
 }
 
 /**
- * @param {{ topic: string, platform: string, type: string, count: number }} params
+ * @param {{ topic: string, platform: string, type: string, count: number, contentType?: string, goal?: string }} params
  */
-export function generateHashtags({ topic, platform, type, count }) {
-  const pool = buildCandidates(topic, platform, type);
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-
+export function generateHashtags({
+  topic,
+  platform,
+  type,
+  count,
+  contentType = 'post',
+  goal = 'more_reach',
+}) {
+  const used = new Set();
   const primary = toHashtag(normalizeTopic(topic));
+  if (primary) used.add(primary);
+
+  const perGroup = Math.max(2, Math.ceil(count / 4));
+
+  const trendingPool = buildCandidates(topic, platform, 'trending', contentType, goal);
+  const nichePool = buildCandidates(topic, platform, 'niche', contentType, goal);
+  const lowCompPool = buildCandidates(topic, platform, 'low_competition', contentType, goal);
+  const platformPool = buildPlatformSpecific(topic, platform, contentType);
+
+  const groupTags = {
+    trending: pickFromPool(trendingPool, perGroup, used),
+    niche: pickFromPool(nichePool, perGroup, used),
+    low_competition: pickFromPool(lowCompPool, perGroup, used),
+    platform_specific: pickFromPool(platformPool, perGroup, used),
+  };
+
   const hashtags = [];
-  if (primary && !hashtags.includes(primary)) hashtags.push(primary);
+  if (primary) hashtags.push(primary);
 
-  for (const tag of shuffled) {
-    if (hashtags.length >= count) break;
-    if (!hashtags.includes(tag)) hashtags.push(tag);
+  GROUP_META.forEach(({ key }) => {
+    groupTags[key].forEach((tag) => {
+      if (!hashtags.includes(tag)) hashtags.push(tag);
+    });
+  });
+
+  const extraNeeded = count - hashtags.length;
+  if (extraNeeded > 0) {
+    const mixedPool = buildCandidates(topic, platform, type, contentType, goal);
+    pickFromPool(mixedPool, extraNeeded, used).forEach((tag) => {
+      if (!hashtags.includes(tag)) hashtags.push(tag);
+    });
   }
 
-  let i = 0;
-  while (hashtags.length < count && i < 100) {
-    const extra = toHashtag(`${normalizeTopic(topic)}${i}${TYPE_MODIFIERS.mixed[i % TYPE_MODIFIERS.mixed.length]}`);
-    if (extra && !hashtags.includes(extra)) hashtags.push(extra);
-    i += 1;
+  if (hashtags.length < count) {
+    fillRemaining(topic, count - hashtags.length, used).forEach((tag) => {
+      if (!hashtags.includes(tag)) hashtags.push(tag);
+    });
   }
+
+  const finalHashtags = hashtags.slice(0, count);
+
+  const groups = GROUP_META.map(({ key, label, badge }) => ({
+    key,
+    label,
+    badge,
+    hashtags: groupTags[key].length > 0 ? groupTags[key] : finalHashtags.slice(0, perGroup),
+  })).filter((group) => group.hashtags.length > 0);
 
   return {
-    hashtags: hashtags.slice(0, count),
+    hashtags: finalHashtags,
+    groups,
     captionIdea: pickCaption(topic, platform),
   };
 }
