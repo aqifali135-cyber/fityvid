@@ -10,6 +10,47 @@ const PLATFORMS = [
   { value: 'facebook', label: 'Facebook' },
 ];
 
+function PlatformIcon({ platform }) {
+  const svgProps = {
+    width: 22,
+    height: 22,
+    viewBox: '0 0 24 24',
+    fill: 'currentColor',
+    'aria-hidden': true,
+  };
+
+  switch (platform) {
+    case 'youtube':
+      return (
+        <svg {...svgProps}>
+          <path d="M21.8 8.001a2.75 2.75 0 0 0-1.94-1.948C18.254 5.667 12 5.667 12 5.667s-6.254 0-7.86.386A2.75 2.75 0 0 0 2.2 8.001 28.3 28.3 0 0 0 1.818 12a28.3 28.3 0 0 0 .382 3.999 2.75 2.75 0 0 0 1.94 1.948C5.746 18.333 12 18.333 12 18.333s6.254 0 7.86-.386a2.75 2.75 0 0 0 1.94-1.948A28.3 28.3 0 0 0 22.182 12a28.3 28.3 0 0 0-.382-3.999zM10 15.5v-7l6 3.5-6 3.5z" />
+        </svg>
+      );
+    case 'tiktok':
+      return (
+        <svg {...svgProps}>
+          <path d="M16.6 5.82c.81.96 2 1.57 3.33 1.63v3.05a5.48 5.48 0 0 1-3.33-.98v6.35a4.97 4.97 0 1 1-4.97-4.97c.26 0 .51.02.76.06v3.13a1.84 1.84 0 1 0 1.3 1.76V5.82h2.91z" />
+        </svg>
+      );
+    case 'instagram':
+      return (
+        <svg {...svgProps} fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="3" width="18" height="18" rx="5" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="17.2" cy="6.8" r="1.2" fill="currentColor" stroke="none" />
+        </svg>
+      );
+    case 'facebook':
+      return (
+        <svg {...svgProps}>
+          <path d="M13.5 22v-8h2.7l.4-3.2H13.5V9.1c0-.9.3-1.6 1.7-1.6h1.5V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 4v2.5H7.5v3.2h2.1V22h3.9z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
 const CONTENT_TYPES = [
   { value: 'post', label: 'Post' },
   { value: 'reel_short', label: 'Reel / Short' },
@@ -104,6 +145,13 @@ export default function HashtagForm() {
     setError('');
   }
 
+  function handleTopicChange(e) {
+    setTopic(e.target.value);
+    setError('');
+  }
+
+  const activeExample = EXAMPLE_KEYWORDS.find((keyword) => keyword === topic.trim()) ?? '';
+
   return (
     <div className="hashtag-form-wrapper">
       <form className="hashtag-form card" onSubmit={handleSubmit}>
@@ -115,29 +163,41 @@ export default function HashtagForm() {
             className="input"
             placeholder="Enter topic like fitness, cooking, travel, gaming, fashion..."
             value={topic}
-            onChange={(e) => setTopic(e.target.value)}
+            onChange={handleTopicChange}
             maxLength={80}
           />
           <div className="example-keywords">
             <span className="example-keywords-label">Try:</span>
-            {EXAMPLE_KEYWORDS.map((keyword) => (
-              <button
-                key={keyword}
-                type="button"
-                className="example-keyword-chip"
-                onClick={() => handleExampleClick(keyword)}
-              >
-                {keyword}
-              </button>
-            ))}
+            {EXAMPLE_KEYWORDS.map((keyword) => {
+              const isSelected = activeExample === keyword;
+              return (
+                <button
+                  key={keyword}
+                  type="button"
+                  className={`example-keyword-chip ${isSelected ? 'selected' : ''}`}
+                  onClick={() => handleExampleClick(keyword)}
+                  aria-pressed={isSelected}
+                >
+                  {isSelected && (
+                    <span className="example-keyword-check" aria-hidden="true">
+                      ✓
+                    </span>
+                  )}
+                  {keyword}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         <div className="form-group">
           <span className="label">Platform</span>
-          <div className="option-grid platform-options">
+          <div className="platform-options">
             {PLATFORMS.map((p) => (
-              <label key={p.value} className={`option-card ${platform === p.value ? 'selected' : ''}`}>
+              <label
+                key={p.value}
+                className={`platform-btn platform-btn--${p.value} ${platform === p.value ? 'selected' : ''}`}
+              >
                 <input
                   type="radio"
                   name="platform"
@@ -145,7 +205,18 @@ export default function HashtagForm() {
                   checked={platform === p.value}
                   onChange={() => setPlatform(p.value)}
                 />
-                <span>{p.label}</span>
+                <span className="platform-btn__face">
+                  <span className="platform-btn__icon">
+                    <PlatformIcon platform={p.value} />
+                  </span>
+                  <span className="platform-btn__label">{p.label}</span>
+                  {platform === p.value && (
+                    <span className="platform-btn__badge" aria-label="Selected">
+                      ✓
+                    </span>
+                  )}
+                  <span className="platform-btn__gloss" aria-hidden="true" />
+                </span>
               </label>
             ))}
           </div>
