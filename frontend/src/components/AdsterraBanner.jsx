@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { ADSTERRA_BANNER } from '../constants/adsterra';
+import { ADSTERRA_DESKTOP, ADSTERRA_MOBILE } from '../constants/adsterra';
 import './AdsterraBanner.css';
 
 const DESKTOP_MEDIA = '(min-width: 768px)';
 
-function injectAdsterraScript(container) {
+function injectAdsterraScript(container, config) {
   if (container.querySelector('script[data-adsterra="invoke"]')) {
     return null;
   }
@@ -13,17 +13,17 @@ function injectAdsterraScript(container) {
   container.dataset.adsterraLoadId = loadId;
 
   window.atOptions = {
-    key: ADSTERRA_BANNER.key,
+    key: config.key,
     format: 'iframe',
-    height: ADSTERRA_BANNER.height,
-    width: ADSTERRA_BANNER.width,
+    height: config.height,
+    width: config.width,
     params: {},
   };
 
   const invokeScript = document.createElement('script');
   invokeScript.type = 'text/javascript';
   invokeScript.dataset.adsterra = 'invoke';
-  invokeScript.src = ADSTERRA_BANNER.invokeUrl;
+  invokeScript.src = config.invokeUrl;
   invokeScript.async = true;
   invokeScript.onload = () => {
     console.log('Adsterra script loaded');
@@ -56,10 +56,6 @@ export default function AdsterraBanner() {
   });
 
   useEffect(() => {
-    console.log('Adsterra banner component mounted');
-  }, []);
-
-  useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA);
     const onChange = (event) => setIsDesktop(event.matches);
 
@@ -68,10 +64,11 @@ export default function AdsterraBanner() {
   }, []);
 
   useEffect(() => {
-    if (!isDesktop) {
-      return undefined;
-    }
+    console.log('Adsterra banner component mounted');
+  }, []);
 
+  useEffect(() => {
+    const activeConfig = isDesktop ? ADSTERRA_DESKTOP : ADSTERRA_MOBILE;
     const container = containerRef.current;
     if (!container) {
       return undefined;
@@ -88,7 +85,7 @@ export default function AdsterraBanner() {
       }
 
       try {
-        const loadId = injectAdsterraScript(container);
+        const loadId = injectAdsterraScript(container, activeConfig);
         if (loadId) {
           loadIdRef.current = loadId;
         }
@@ -108,14 +105,16 @@ export default function AdsterraBanner() {
     };
   }, [isDesktop]);
 
-  if (!isDesktop) {
-    return null;
-  }
-
   return (
-    <aside className="adsterra-banner-wrap" aria-label="Advertisement">
+    <aside
+      className={`adsterra-banner-wrap ${isDesktop ? 'adsterra-banner-wrap--desktop' : 'adsterra-banner-wrap--mobile'}`}
+      aria-label="Advertisement"
+    >
       <p className="adsterra-banner-label">Advertisement</p>
-      <div ref={containerRef} className="adsterra-banner" />
+      <div
+        ref={containerRef}
+        className={`adsterra-banner ${isDesktop ? 'adsterra-banner--desktop' : 'adsterra-banner--mobile'}`}
+      />
     </aside>
   );
 }

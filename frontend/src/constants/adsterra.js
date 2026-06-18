@@ -1,13 +1,26 @@
-const DEFAULT_KEY = 'd490373a510a21fa19dd628af58b29a3';
+const DESKTOP_DEFAULT_KEY = 'd490373a510a21fa19dd628af58b29a3';
+const MOBILE_DEFAULT_KEY = '5e714184b8e787316ca74140f7bab84e';
 
-const key = import.meta.env.VITE_ADSTERRA_KEY?.trim() || DEFAULT_KEY;
-const invokeUrl =
-  import.meta.env.VITE_ADSTERRA_INVOKE_URL?.trim() ||
-  `https://www.highperformanceformat.com/${key}/invoke.js`;
+const desktopKey = import.meta.env.VITE_ADSTERRA_KEY?.trim() || DESKTOP_DEFAULT_KEY;
+const mobileKey = import.meta.env.VITE_ADSTERRA_MOBILE_KEY?.trim() || MOBILE_DEFAULT_KEY;
 
-export const ADSTERRA_BANNER = {
-  key,
-  invokeUrl,
+export const ADSTERRA_DESKTOP = {
+  key: desktopKey,
+  invokeUrl:
+    import.meta.env.VITE_ADSTERRA_INVOKE_URL?.trim() ||
+    `https://www.highperformanceformat.com/${desktopKey}/invoke.js`,
   width: Number(import.meta.env.VITE_ADSTERRA_WIDTH) || 728,
   height: Number(import.meta.env.VITE_ADSTERRA_HEIGHT) || 90,
 };
+
+export const ADSTERRA_MOBILE = {
+  key: mobileKey,
+  invokeUrl:
+    import.meta.env.VITE_ADSTERRA_MOBILE_INVOKE_URL?.trim() ||
+    `https://www.highperformanceformat.com/${mobileKey}/invoke.js`,
+  width: Number(import.meta.env.VITE_ADSTERRA_MOBILE_WIDTH) || 320,
+  height: Number(import.meta.env.VITE_ADSTERRA_MOBILE_HEIGHT) || 50,
+};
+
+/** @deprecated Use ADSTERRA_DESKTOP */
+export const ADSTERRA_BANNER = ADSTERRA_DESKTOP;
