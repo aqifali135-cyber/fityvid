@@ -5,9 +5,9 @@ import './HowItWorks.css';
 const ICONS = {
   logo: '/icons/fityvid-logo.png',
   youtube: '/icons/youtube.png',
-  tiktok: '/icons/tiktok.png?v=3',
-  instagram: '/icons/instagram.png?v=3',
-  facebook: '/icons/facebook.png?v=3',
+  tiktok: '/icons/tiktok.png?v=4',
+  instagram: '/icons/instagram.png?v=4',
+  facebook: '/icons/facebook.png?v=4',
   link: '/icons/link.png?v=3',
   copy: '/icons/copy.png?v=3',
   shield: '/icons/shield.png?v=3',

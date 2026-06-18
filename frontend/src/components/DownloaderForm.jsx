@@ -12,6 +12,13 @@ const PLATFORMS = [
   { id: 'facebook', name: 'Facebook' },
 ];
 
+const HERO_ICONS = {
+  youtube: '/icons/youtube.png?v=4',
+  tiktok: '/icons/tiktok.png?v=4',
+  instagram: '/icons/instagram.png?v=4',
+  facebook: '/icons/facebook.png?v=4',
+};
+
 const FETCH_ERROR = 'Unable to fetch video details. Please try another public video link.';
 const INVALID_LINK_MSG =
   'Please enter a valid YouTube, Facebook, TikTok, or Instagram link.';
@@ -57,7 +64,8 @@ function PlatformIcon({ platform }) {
   }
 }
 
-export default function DownloaderForm({ defaultPlatform = null }) {
+export default function DownloaderForm({ defaultPlatform = null, variant = 'default' }) {
+  const isHero = variant === 'hero';
   const [url, setUrl] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState(defaultPlatform);
   const [manualPlatform, setManualPlatform] = useState(Boolean(defaultPlatform));
@@ -147,50 +155,85 @@ export default function DownloaderForm({ defaultPlatform = null }) {
     setManualPlatform(Boolean(defaultPlatform));
   }
 
-  return (
-    <div className="downloader-form card">
-      <div className="home-platform-options" role="group" aria-label="Supported platforms">
-        {PLATFORMS.map((p) => {
-          const isSelected = activePlatform === p.id;
-          return (
-            <button
-              key={p.id}
-              type="button"
-              className={`home-platform-btn home-platform-btn--${p.id} ${isSelected ? 'selected' : ''}`}
-              onClick={() => handlePlatformSelect(p.id)}
-              aria-pressed={isSelected}
-            >
-              <span className="home-platform-btn__face">
-                <span className="home-platform-btn__icon">
-                  {isSelected ? (
-                    <PlatformIcon platform={p.id} />
-                  ) : (
-                    <img
-                      src={PLATFORM_ICONS[p.id]}
-                      alt=""
-                      className="home-platform-btn__icon-img"
-                      width={24}
-                      height={24}
-                      loading="lazy"
-                    />
-                  )}
-                </span>
-                <span className="home-platform-btn__label">{p.name}</span>
-                {isSelected && (
-                  <span className="home-platform-btn__badge" aria-label="Selected">
-                    ✓
-                  </span>
-                )}
-                <span className="home-platform-btn__gloss" aria-hidden="true" />
-              </span>
-            </button>
-          );
-        })}
-      </div>
+  function renderPlatformOptions() {
+    return PLATFORMS.map((p) => {
+      const isSelected = activePlatform === p.id;
 
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label className="label" htmlFor="video-url">Video URL</label>
+      if (isHero) {
+        return (
+          <button
+            key={p.id}
+            type="button"
+            className={`hero-platform-btn ${isSelected ? 'hero-platform-btn--selected' : ''}`}
+            onClick={() => handlePlatformSelect(p.id)}
+            aria-pressed={isSelected}
+          >
+            <span className="platform-icon-circle">
+              <img
+                src={HERO_ICONS[p.id]}
+                alt={p.name}
+                loading="lazy"
+                decoding="async"
+              />
+            </span>
+            <span className="hero-platform-btn__label">{p.name}</span>
+          </button>
+        );
+      }
+
+      return (
+        <button
+          key={p.id}
+          type="button"
+          className={`home-platform-btn home-platform-btn--${p.id} ${isSelected ? 'selected' : ''}`}
+          onClick={() => handlePlatformSelect(p.id)}
+          aria-pressed={isSelected}
+        >
+          <span className="home-platform-btn__face">
+            <span className="home-platform-btn__icon">
+              {isSelected ? (
+                <PlatformIcon platform={p.id} />
+              ) : (
+                <img
+                  src={PLATFORM_ICONS[p.id]}
+                  alt=""
+                  className="home-platform-btn__icon-img"
+                  width={24}
+                  height={24}
+                  loading="lazy"
+                />
+              )}
+            </span>
+            <span className="home-platform-btn__label">{p.name}</span>
+            {isSelected && (
+              <span className="home-platform-btn__badge" aria-label="Selected">
+                ✓
+              </span>
+            )}
+            <span className="home-platform-btn__gloss" aria-hidden="true" />
+          </span>
+        </button>
+      );
+    });
+  }
+
+  const platformGroup = (
+    <div
+      className={isHero ? 'hero-platform-row' : 'home-platform-options'}
+      role="group"
+      aria-label="Supported platforms"
+    >
+      {renderPlatformOptions()}
+    </div>
+  );
+
+  const formBlock = (
+    <form className={isHero ? 'hero-downloader-form' : undefined} onSubmit={handleSubmit}>
+      <div className="form-group">
+        <label className={`label ${isHero ? 'visually-hidden' : ''}`} htmlFor="video-url">
+          Video URL
+        </label>
+        {!isHero && (
           <p
             className={`platform-detect-hint platform-detect-hint--${urlHint.type}`}
             role="status"
@@ -198,30 +241,93 @@ export default function DownloaderForm({ defaultPlatform = null }) {
           >
             {urlHint.text}
           </p>
+        )}
+        {isHero && urlHint.type !== 'idle' && (
+          <p
+            className={`platform-detect-hint platform-detect-hint--${urlHint.type} platform-detect-hint--hero`}
+            role="status"
+            aria-live="polite"
+          >
+            {urlHint.text}
+          </p>
+        )}
+        <div className={isHero ? 'hero-input-row' : undefined}>
           <input
             id="video-url"
             type="url"
             className="input"
-            placeholder="Paste YouTube, Facebook, TikTok, or Instagram video link..."
+            placeholder={
+              isHero
+                ? 'Paste video link here...'
+                : 'Paste YouTube, Facebook, TikTok, or Instagram video link...'
+            }
             value={url}
             onChange={(e) => handleUrlChange(e.target.value)}
             disabled={loading}
           />
+          {isHero && (
+            <button type="submit" className="download-submit-button" disabled={loading}>
+              {loading ? 'Please wait…' : 'Get Download Info'}
+              {!loading && (
+                <span className="download-submit-button__arrow" aria-hidden="true">
+                  →
+                </span>
+              )}
+            </button>
+          )}
         </div>
-        {error && <p className="error-text">{error}</p>}
-        {loading && (
-          <p className="loading-text" role="status">
-            Fetching video information…
-          </p>
-        )}
+      </div>
+      {error && <p className="error-text">{error}</p>}
+      {loading && (
+        <p className="loading-text" role="status">
+          Fetching video information…
+        </p>
+      )}
+      {!isHero && (
         <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
           {loading ? 'Please wait…' : 'Get Download Info'}
         </button>
-      </form>
-      <p className="downloader-notice">
-        Please download only your own content or content you have permission to use.
-        Only publicly accessible videos are supported. Private videos are not supported.
-      </p>
+      )}
+    </form>
+  );
+
+  const noticeBlock = isHero ? (
+    <p className="downloader-notice downloader-notice--hero">
+      <span className="downloader-notice__check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path
+            fill="currentColor"
+            d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"
+          />
+        </svg>
+      </span>
+      Please download only your own content or content you have permission to use.
+    </p>
+  ) : (
+    <p className="downloader-notice">
+      Please download only your own content or content you have permission to use.
+      Only publicly accessible videos are supported. Private videos are not supported.
+    </p>
+  );
+
+  if (isHero) {
+    return (
+      <div className="downloader-form downloader-form--hero">
+        {platformGroup}
+        <div className="hero-form-stack">
+          {formBlock}
+          {noticeBlock}
+          {result && !loading && <VideoResult data={result} onReset={handleReset} />}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="downloader-form card">
+      {platformGroup}
+      {formBlock}
+      {noticeBlock}
       {result && !loading && <VideoResult data={result} onReset={handleReset} />}
     </div>
   );

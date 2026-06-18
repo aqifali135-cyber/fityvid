@@ -31,26 +31,39 @@ export default function Home() {
       <JsonLd data={[websiteSchema, organizationSchema, webApplicationSchema]} />
 
       <section className="hero section">
-        <div className="hero-bubbles" aria-hidden="true">
-          <span className="hero-bubble hero-bubble--1" />
-          <span className="hero-bubble hero-bubble--2" />
-          <span className="hero-bubble hero-bubble--3" />
-          <span className="hero-bubble hero-bubble--4" />
-          <span className="hero-bubble hero-bubble--5" />
-          <span className="hero-bubble hero-bubble--6" />
-          <span className="hero-bubble hero-bubble--7" />
-          <span className="hero-bubble hero-bubble--8" />
+        <div className="hero-bg" aria-hidden="true">
+          <span className="hero-bg__shape hero-bg__shape--tl" />
+          <span className="hero-bg__shape hero-bg__shape--br" />
+          <span className="hero-bg__shape hero-bg__shape--mid" />
+          <span className="hero-bg__dots hero-bg__dots--tr" />
+          <span className="hero-bg__dots hero-bg__dots--bl" />
+          <svg className="hero-bg__curve" viewBox="0 0 420 120" preserveAspectRatio="none" aria-hidden="true">
+            <path
+              d="M10 95 C120 20, 280 110, 410 35"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeDasharray="6 8"
+            />
+          </svg>
         </div>
-        <div className="container hero-content">
-          <h1 className="hero-title">
-            Download Videos in HD &amp; Generate Hashtags with FityVid
-          </h1>
-          <p className="hero-subtitle">
-            FityVid is a free online video downloader for YouTube, TikTok, Instagram, and
-            Facebook. Paste a link, view quality options with file size, and use our social
-            media hashtag generator for posts and reels.
-          </p>
-          <DownloaderForm />
+
+        <div className="container hero-inner">
+          <div className="hero-top">
+            <div className="hero-copy">
+              <span className="hero-badge">Simple. Fast. Reliable.</span>
+              <h1 className="hero-title">
+                Download Videos
+                <br />
+                in <span className="hero-title__hd">HD</span> Quality
+              </h1>
+              <p className="hero-subtitle">
+                Download videos from YouTube, TikTok, Instagram, and Facebook quickly and easily.
+              </p>
+            </div>
+          </div>
+
+          <DownloaderForm variant="hero" />
         </div>
       </section>
 

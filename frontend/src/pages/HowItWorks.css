@@ -369,6 +369,8 @@
 .hiw-copy-card__social img {
   width: 28px;
   height: 28px;
+  object-fit: contain;
+  display: block;
 }
 
 .hiw-copy-card__more {
