@@ -57,10 +57,10 @@ function PlatformIcon({ platform }) {
   }
 }
 
-export default function DownloaderForm() {
+export default function DownloaderForm({ defaultPlatform = null }) {
   const [url, setUrl] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState(null);
-  const [manualPlatform, setManualPlatform] = useState(false);
+  const [selectedPlatform, setSelectedPlatform] = useState(defaultPlatform);
+  const [manualPlatform, setManualPlatform] = useState(Boolean(defaultPlatform));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
@@ -143,8 +143,8 @@ export default function DownloaderForm() {
     setResult(null);
     setError('');
     setUrl('');
-    setSelectedPlatform(null);
-    setManualPlatform(false);
+    setSelectedPlatform(defaultPlatform);
+    setManualPlatform(Boolean(defaultPlatform));
   }
 
   return (

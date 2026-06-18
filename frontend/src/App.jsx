@@ -9,6 +9,10 @@ import InstagramHashtagGenerator from './pages/InstagramHashtagGenerator';
 import YoutubeHashtagGenerator from './pages/YoutubeHashtagGenerator';
 import FacebookHashtagGenerator from './pages/FacebookHashtagGenerator';
 import InstagramReelsDownloader from './pages/InstagramReelsDownloader';
+import YoutubeVideoDownloader from './pages/YoutubeVideoDownloader';
+import TiktokVideoDownloader from './pages/TiktokVideoDownloader';
+import InstagramVideoDownloader from './pages/InstagramVideoDownloader';
+import FacebookVideoDownloader from './pages/FacebookVideoDownloader';
 import DownloadGuide from './pages/DownloadGuide';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
@@ -31,6 +35,10 @@ export default function App() {
         <Route path="/youtube-hashtag-generator" element={<YoutubeHashtagGenerator />} />
         <Route path="/facebook-hashtag-generator" element={<FacebookHashtagGenerator />} />
         <Route path="/instagram-reels-downloader" element={<InstagramReelsDownloader />} />
+        <Route path="/youtube-video-downloader" element={<YoutubeVideoDownloader />} />
+        <Route path="/tiktok-video-downloader" element={<TiktokVideoDownloader />} />
+        <Route path="/instagram-video-downloader" element={<InstagramVideoDownloader />} />
+        <Route path="/facebook-video-downloader" element={<FacebookVideoDownloader />} />
         <Route path="/download-guide" element={<DownloadGuide />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/contact" element={<Contact />} />

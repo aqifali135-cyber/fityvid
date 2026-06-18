@@ -63,6 +63,30 @@ export const PAGE_SEO = {
     description:
       'Instagram video downloader for public Reels and posts. Paste a link to download Instagram Reels when supported. Public content only—no private or copyrighted downloads.',
   },
+  youtubeVideoDownloader: {
+    path: '/youtube-video-downloader',
+    title: 'YouTube Video Downloader — Download Public YouTube Videos Online | FityVid',
+    description:
+      'Free YouTube video downloader for public links. Paste a YouTube URL, choose quality when available, and download only content you have permission to use.',
+  },
+  tiktokVideoDownloader: {
+    path: '/tiktok-video-downloader',
+    title: 'TikTok Video Downloader — Download Public TikTok Videos Online | FityVid',
+    description:
+      'Download public TikTok videos with FityVid. Paste a TikTok link, check quality options, and save only content you have permission to use.',
+  },
+  instagramVideoDownloader: {
+    path: '/instagram-video-downloader',
+    title: 'Instagram Video Downloader — Download Public Instagram Videos & Reels | FityVid',
+    description:
+      'Instagram video downloader for public posts and Reels. Paste a link, view quality options, and download only content you have permission to use.',
+  },
+  facebookVideoDownloader: {
+    path: '/facebook-video-downloader',
+    title: 'Facebook Video Downloader — Download Public Facebook Videos Online | FityVid',
+    description:
+      'Free Facebook video downloader for public links. Paste a Facebook video URL and download only content you have permission to use.',
+  },
   faq: {
     path: '/faq',
     title: 'FityVid FAQ - Video Downloader & Hashtag Generator Questions',
