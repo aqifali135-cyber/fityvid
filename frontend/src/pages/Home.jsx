@@ -4,6 +4,7 @@ import JsonLd from '../components/JsonLd';
 import DownloaderForm from '../components/DownloaderForm';
 import AdsterraBanner from '../components/AdsterraBanner';
 import AdsterraSquareBanner from '../components/AdsterraSquareBanner';
+import AdsterraFooterBanner from '../components/AdsterraFooterBanner';
 import HeroFloatingSocials from '../components/HeroFloatingSocials';
 import PlatformCardIcon from '../components/PlatformCardIcon';
 import { HOME_PLATFORMS } from '../constants/platforms';
@@ -174,6 +175,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <AdsterraFooterBanner />
     </>
   );
 }

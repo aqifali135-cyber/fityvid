@@ -34,5 +34,17 @@ export const ADSTERRA_SQUARE = {
   height: Number(import.meta.env.VITE_ADSTERRA_SQUARE_HEIGHT) || 250,
 };
 
+const FOOTER_DEFAULT_KEY = 'a049ce4089624e4be168a48480a99dfa';
+const footerKey = import.meta.env.VITE_ADSTERRA_FOOTER_KEY?.trim() || FOOTER_DEFAULT_KEY;
+
+export const ADSTERRA_FOOTER = {
+  key: footerKey,
+  invokeUrl:
+    import.meta.env.VITE_ADSTERRA_FOOTER_INVOKE_URL?.trim() ||
+    `https://www.highperformanceformat.com/${footerKey}/invoke.js`,
+  width: Number(import.meta.env.VITE_ADSTERRA_FOOTER_WIDTH) || 468,
+  height: Number(import.meta.env.VITE_ADSTERRA_FOOTER_HEIGHT) || 60,
+};
+
 /** @deprecated Use ADSTERRA_DESKTOP */
 export const ADSTERRA_BANNER = ADSTERRA_DESKTOP;

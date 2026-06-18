@@ -1,0 +1,36 @@
+.adsterra-footer-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  padding: 32px 1rem;
+  margin-top: 0.5rem;
+  overflow: hidden;
+  box-sizing: border-box;
+  border-top: 1px solid #e2e8f0;
+}
+
+.adsterra-footer-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.adsterra-footer-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: min(100%, 468px);
+  min-height: 60px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.adsterra-footer-slot iframe {
+  max-width: 100%;
+}
