@@ -26,37 +26,18 @@
   text-align: center;
 }
 
-.adsterra-banner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  overflow: hidden;
+.adsterra-banner-iframe {
   box-sizing: border-box;
 }
 
-.adsterra-banner--desktop {
-  max-width: 728px;
-  min-height: 90px;
+.adsterra-banner-iframe--desktop {
+  width: 728px;
+  height: 90px;
+  max-width: min(100%, 728px);
 }
 
-.adsterra-banner--mobile {
-  max-width: 320px;
-  min-height: 50px;
-}
-
-.adsterra-banner iframe {
-  max-width: 100%;
-}
-
-@media (max-width: 767px) {
-  .adsterra-banner-wrap--mobile .adsterra-banner--mobile {
-    width: min(100%, 320px);
-  }
-}
-
-@media (min-width: 768px) {
-  .adsterra-banner-wrap--desktop .adsterra-banner--desktop {
-    width: min(100%, 728px);
-  }
+.adsterra-banner-iframe--mobile {
+  width: 320px;
+  height: 50px;
+  max-width: min(100%, 320px);
 }

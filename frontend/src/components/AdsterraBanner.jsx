@@ -1,59 +1,27 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ADSTERRA_DESKTOP, ADSTERRA_MOBILE } from '../constants/adsterra';
+import { useAdsterraIframe } from '../hooks/useAdsterraIframe';
 import './AdsterraBanner.css';
 
 const DESKTOP_MEDIA = '(min-width: 768px)';
 
-function injectAdsterraScript(container, config) {
-  if (container.querySelector('script[data-adsterra="invoke"]')) {
-    return null;
-  }
-
-  const loadId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  container.dataset.adsterraLoadId = loadId;
-
-  window.atOptions = {
-    key: config.key,
-    format: 'iframe',
-    height: config.height,
-    width: config.width,
-    params: {},
-  };
-
-  const invokeScript = document.createElement('script');
-  invokeScript.type = 'text/javascript';
-  invokeScript.dataset.adsterra = 'invoke';
-  invokeScript.src = config.invokeUrl;
-  invokeScript.async = true;
-  invokeScript.onload = () => {
-    console.log('Adsterra script loaded');
-  };
-  invokeScript.onerror = () => {
-    console.log('Adsterra script failed');
-  };
-
-  container.appendChild(invokeScript);
-  return loadId;
-}
-
-function clearAdsterraContainer(container, loadId) {
-  if (!container || container.dataset.adsterraLoadId !== loadId) {
-    return;
-  }
-
-  delete container.dataset.adsterraLoadId;
-  container.replaceChildren();
-}
+const IFRAME_STYLE = {
+  border: 'none',
+  display: 'block',
+  maxWidth: '100%',
+  overflow: 'hidden',
+};
 
 export default function AdsterraBanner() {
-  const containerRef = useRef(null);
-  const loadIdRef = useRef(null);
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === 'undefined') {
       return false;
     }
     return window.matchMedia(DESKTOP_MEDIA).matches;
   });
+
+  const config = isDesktop ? ADSTERRA_DESKTOP : ADSTERRA_MOBILE;
+  const iframeRef = useAdsterraIframe(config, true);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA);
@@ -63,57 +31,20 @@ export default function AdsterraBanner() {
     return () => mediaQuery.removeEventListener('change', onChange);
   }, []);
 
-  useEffect(() => {
-    console.log('Adsterra banner component mounted');
-  }, []);
-
-  useEffect(() => {
-    const activeConfig = isDesktop ? ADSTERRA_DESKTOP : ADSTERRA_MOBILE;
-    const container = containerRef.current;
-    if (!container) {
-      return undefined;
-    }
-
-    let cancelled = false;
-    const timeoutId = window.setTimeout(() => {
-      if (cancelled || !containerRef.current || containerRef.current !== container) {
-        return;
-      }
-
-      if (container.dataset.adsterraLoadId) {
-        return;
-      }
-
-      try {
-        const loadId = injectAdsterraScript(container, activeConfig);
-        if (loadId) {
-          loadIdRef.current = loadId;
-        }
-      } catch {
-        console.log('Adsterra script failed');
-      }
-    }, 0);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timeoutId);
-
-      if (loadIdRef.current) {
-        clearAdsterraContainer(container, loadIdRef.current);
-        loadIdRef.current = null;
-      }
-    };
-  }, [isDesktop]);
-
   return (
     <aside
       className={`adsterra-banner-wrap ${isDesktop ? 'adsterra-banner-wrap--desktop' : 'adsterra-banner-wrap--mobile'}`}
       aria-label="Advertisement"
     >
       <p className="adsterra-banner-label">Advertisement</p>
-      <div
-        ref={containerRef}
-        className={`adsterra-banner ${isDesktop ? 'adsterra-banner--desktop' : 'adsterra-banner--mobile'}`}
+      <iframe
+        ref={iframeRef}
+        title="Advertisement"
+        width={config.width}
+        height={config.height}
+        className={`adsterra-banner-iframe ${isDesktop ? 'adsterra-banner-iframe--desktop' : 'adsterra-banner-iframe--mobile'}`}
+        scrolling="no"
+        style={IFRAME_STYLE}
       />
     </aside>
   );

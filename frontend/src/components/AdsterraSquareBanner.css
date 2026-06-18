@@ -19,16 +19,9 @@
   text-align: center;
 }
 
-.adsterra-square-slot {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: min(100%, 300px);
-  min-height: 250px;
-  overflow: hidden;
+.adsterra-square-iframe {
+  width: 300px;
+  height: 250px;
+  max-width: min(100%, 300px);
   box-sizing: border-box;
-}
-
-.adsterra-square-slot iframe {
-  max-width: 100%;
 }
