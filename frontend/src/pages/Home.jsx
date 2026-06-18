@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import JsonLd from '../components/JsonLd';
 import DownloaderForm from '../components/DownloaderForm';
+import AdsterraBanner from '../components/AdsterraBanner';
 import HeroFloatingSocials from '../components/HeroFloatingSocials';
 import PlatformCardIcon from '../components/PlatformCardIcon';
 import { HOME_PLATFORMS } from '../constants/platforms';
@@ -45,6 +46,8 @@ export default function Home() {
           Social-style icons are used for recognition only.
         </p>
       </section>
+
+      <AdsterraBanner />
 
       <section className="section hashtag-promo">
         <div className="container hashtag-promo-inner card">

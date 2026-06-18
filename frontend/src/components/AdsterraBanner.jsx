@@ -4,30 +4,35 @@ import './AdsterraBanner.css';
 
 const DESKTOP_MEDIA = '(min-width: 768px)';
 
-function injectAdsterraScripts(container) {
+function injectAdsterraScript(container) {
+  if (container.querySelector('script[data-adsterra="invoke"]')) {
+    return null;
+  }
+
   const loadId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   container.dataset.adsterraLoadId = loadId;
 
-  const configScript = document.createElement('script');
-  configScript.type = 'text/javascript';
-  configScript.dataset.adsterra = 'config';
-  configScript.textContent = `atOptions = ${JSON.stringify({
+  window.atOptions = {
     key: ADSTERRA_BANNER.key,
     format: 'iframe',
     height: ADSTERRA_BANNER.height,
     width: ADSTERRA_BANNER.width,
     params: {},
-  })};`;
+  };
 
   const invokeScript = document.createElement('script');
   invokeScript.type = 'text/javascript';
   invokeScript.dataset.adsterra = 'invoke';
   invokeScript.src = ADSTERRA_BANNER.invokeUrl;
   invokeScript.async = true;
+  invokeScript.onload = () => {
+    console.log('Adsterra script loaded');
+  };
+  invokeScript.onerror = () => {
+    console.log('Adsterra script failed');
+  };
 
-  container.appendChild(configScript);
   container.appendChild(invokeScript);
-
   return loadId;
 }
 
@@ -51,6 +56,10 @@ export default function AdsterraBanner() {
   });
 
   useEffect(() => {
+    console.log('Adsterra banner component mounted');
+  }, []);
+
+  useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA);
     const onChange = (event) => setIsDesktop(event.matches);
 
@@ -59,7 +68,7 @@ export default function AdsterraBanner() {
   }, []);
 
   useEffect(() => {
-    if (!ADSTERRA_BANNER.enabled || !isDesktop) {
+    if (!isDesktop) {
       return undefined;
     }
 
@@ -78,8 +87,14 @@ export default function AdsterraBanner() {
         return;
       }
 
-      const loadId = injectAdsterraScripts(container);
-      loadIdRef.current = loadId;
+      try {
+        const loadId = injectAdsterraScript(container);
+        if (loadId) {
+          loadIdRef.current = loadId;
+        }
+      } catch {
+        console.log('Adsterra script failed');
+      }
     }, 0);
 
     return () => {
@@ -93,12 +108,13 @@ export default function AdsterraBanner() {
     };
   }, [isDesktop]);
 
-  if (!ADSTERRA_BANNER.enabled) {
+  if (!isDesktop) {
     return null;
   }
 
   return (
     <aside className="adsterra-banner-wrap" aria-label="Advertisement">
+      <p className="adsterra-banner-label">Advertisement</p>
       <div ref={containerRef} className="adsterra-banner" />
     </aside>
   );
