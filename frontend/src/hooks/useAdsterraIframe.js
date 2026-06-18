@@ -1,8 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { buildAdsterraSrcDoc } from '../utils/adsterraIframe';
 
+const activeUnitKeys = new Set();
+
 export function useAdsterraIframe(config, enabled = true) {
   const iframeRef = useRef(null);
+  const loadSessionRef = useRef(0);
 
   useEffect(() => {
     if (!enabled) {
@@ -14,19 +17,34 @@ export function useAdsterraIframe(config, enabled = true) {
       return undefined;
     }
 
+    const unitKey = config.key;
+    const loadSession = ++loadSessionRef.current;
     let cancelled = false;
+
     const timeoutId = window.setTimeout(() => {
-      if (cancelled || !iframeRef.current) {
+      if (
+        cancelled ||
+        loadSession !== loadSessionRef.current ||
+        !iframeRef.current
+      ) {
         return;
       }
 
-      if (iframeRef.current.dataset.adsterraLoaded === 'true') {
+      const target = iframeRef.current;
+
+      if (target.dataset.adsterraLoaded === 'true') {
+        return;
+      }
+
+      if (activeUnitKeys.has(unitKey)) {
         return;
       }
 
       try {
-        iframeRef.current.srcdoc = buildAdsterraSrcDoc(config);
-        iframeRef.current.dataset.adsterraLoaded = 'true';
+        target.srcdoc = buildAdsterraSrcDoc(config);
+        target.dataset.adsterraLoaded = 'true';
+        target.dataset.adsterraKey = unitKey;
+        activeUnitKeys.add(unitKey);
       } catch {
         // Ad load failure must not break the page
       }
@@ -34,12 +52,16 @@ export function useAdsterraIframe(config, enabled = true) {
 
     return () => {
       cancelled = true;
+      loadSessionRef.current += 1;
       window.clearTimeout(timeoutId);
 
-      if (iframeRef.current) {
-        iframeRef.current.removeAttribute('srcdoc');
-        iframeRef.current.src = 'about:blank';
-        delete iframeRef.current.dataset.adsterraLoaded;
+      const target = iframeRef.current;
+      if (target?.dataset.adsterraKey === unitKey) {
+        target.removeAttribute('srcdoc');
+        target.src = 'about:blank';
+        delete target.dataset.adsterraLoaded;
+        delete target.dataset.adsterraKey;
+        activeUnitKeys.delete(unitKey);
       }
     };
   }, [enabled, config.key, config.width, config.height, config.invokeUrl]);
