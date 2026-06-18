@@ -22,5 +22,17 @@ export const ADSTERRA_MOBILE = {
   height: Number(import.meta.env.VITE_ADSTERRA_MOBILE_HEIGHT) || 50,
 };
 
+const SQUARE_DEFAULT_KEY = 'a3f921bcd75b2cf1a676b310613c53d9';
+const squareKey = import.meta.env.VITE_ADSTERRA_SQUARE_KEY?.trim() || SQUARE_DEFAULT_KEY;
+
+export const ADSTERRA_SQUARE = {
+  key: squareKey,
+  invokeUrl:
+    import.meta.env.VITE_ADSTERRA_SQUARE_INVOKE_URL?.trim() ||
+    `https://www.highperformanceformat.com/${squareKey}/invoke.js`,
+  width: Number(import.meta.env.VITE_ADSTERRA_SQUARE_WIDTH) || 300,
+  height: Number(import.meta.env.VITE_ADSTERRA_SQUARE_HEIGHT) || 250,
+};
+
 /** @deprecated Use ADSTERRA_DESKTOP */
 export const ADSTERRA_BANNER = ADSTERRA_DESKTOP;

@@ -3,6 +3,7 @@ import SEO from '../components/SEO';
 import JsonLd from '../components/JsonLd';
 import DownloaderForm from '../components/DownloaderForm';
 import AdsterraBanner from '../components/AdsterraBanner';
+import AdsterraSquareBanner from '../components/AdsterraSquareBanner';
 import HeroFloatingSocials from '../components/HeroFloatingSocials';
 import PlatformCardIcon from '../components/PlatformCardIcon';
 import { HOME_PLATFORMS } from '../constants/platforms';
@@ -98,6 +99,8 @@ export default function Home() {
           </p>
         </div>
       </section>
+
+      <AdsterraSquareBanner />
 
       <section className="section seo-blocks-section">
         <div className="container seo-content">
