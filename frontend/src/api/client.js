@@ -1,4 +1,16 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '';
+const PRODUCTION_API_BASE = 'https://api.fityvid.com';
+
+function getApiBase() {
+  const configured =
+    import.meta.env.VITE_API_BASE_URL?.trim() ||
+    import.meta.env.VITE_API_URL?.trim() ||
+    '';
+
+  const base = configured || PRODUCTION_API_BASE;
+  return base.replace(/\/$/, '');
+}
+
+const API_BASE = getApiBase();
 
 export function resolveApiUrl(path) {
   if (!path) return '';

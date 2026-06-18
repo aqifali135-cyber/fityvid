@@ -15,18 +15,21 @@ const PLATFORMS = [
 export default function HeroFloatingSocials() {
   return (
     <div className="hero-floating-layer" aria-hidden="true">
-      <span className="hero-float-bubble bubble-1" />
-      <span className="hero-float-bubble bubble-2" />
-      <span className="hero-float-bubble bubble-3" />
-      <span className="hero-float-bubble bubble-4" />
-
       {PLATFORMS.map(({ id, label, src, alt }) => (
         <div
           key={id}
           className={`floating-social-icon float-${id}`}
           title={label}
         >
-          <img src={src} alt={alt} className="floating-social-img" draggable={false} loading="lazy" />
+          <span className="floating-social-glass">
+            <img
+              src={src}
+              alt={alt}
+              className="floating-social-img"
+              draggable={false}
+              loading="lazy"
+            />
+          </span>
         </div>
       ))}
     </div>

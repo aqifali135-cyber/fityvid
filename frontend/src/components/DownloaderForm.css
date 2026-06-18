@@ -308,3 +308,171 @@
     filter: none;
   }
 }
+
+/* Homepage hero — visual overrides only (no logic changes) */
+.hero .downloader-form {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 22px;
+  box-shadow:
+    0 8px 32px rgba(15, 23, 42, 0.1),
+    0 2px 8px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98);
+}
+
+.hero .downloader-form .label {
+  color: #0f172a;
+}
+
+.hero .downloader-form .input {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.hero .downloader-form .input::placeholder {
+  color: #94a3b8;
+}
+
+.hero .downloader-form .input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+  outline: none;
+}
+
+.hero .home-platform-btn__icon-img {
+  width: 26px;
+  height: 26px;
+  filter: saturate(1.12) contrast(1.05);
+}
+
+.hero .home-platform-btn__icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.hero .home-platform-btn__face {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border-color: #e2e8f0;
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.hero .home-platform-btn:not(.selected):hover .home-platform-btn__face {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 16px rgba(15, 23, 42, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98);
+}
+
+.hero .home-platform-btn:focus-visible .home-platform-btn__face {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+.hero .btn-primary {
+  background-image: linear-gradient(90deg, #0ea5e9, #2563eb, #6366f1);
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.hero .btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.42);
+  filter: brightness(1.04);
+}
+
+.hero .btn-primary:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 3px rgba(15, 23, 42, 0.35),
+    0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.hero .downloader-notice {
+  color: #475569;
+}
+
+.hero .loading-text {
+  color: #1d4ed8;
+}
+
+.hero .error-text {
+  color: #dc2626;
+}
+
+.hero .video-result {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+}
+
+.hero .video-result .video-title {
+  color: #0f172a;
+}
+
+.hero .meta-badge {
+  background: #eff6ff;
+  color: #475569;
+}
+
+.hero .formats-heading {
+  color: #0f172a;
+}
+
+.hero .format-row {
+  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.hero .format-quality {
+  color: #0f172a;
+}
+
+.hero .format-type,
+.hero .format-size {
+  color: #64748b;
+}
+
+.hero .format-download-btn.btn-primary {
+  background-image: linear-gradient(90deg, #0ea5e9, #2563eb, #6366f1);
+  color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .hero .downloader-form {
+    padding: 1.25rem;
+    border-radius: 20px;
+  }
+
+  .hero .home-platform-btn__icon-img,
+  .hero .home-platform-btn__icon svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero .btn-primary,
+  .hero .home-platform-btn__face {
+    transition: box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
+  }
+
+  .hero .btn-primary:hover:not(:disabled),
+  .hero .home-platform-btn:not(.selected):hover .home-platform-btn__face {
+    transform: none;
+  }
+}

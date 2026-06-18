@@ -5,7 +5,6 @@ import DownloaderForm from '../components/DownloaderForm';
 import AdsterraBanner from '../components/AdsterraBanner';
 import AdsterraSquareBanner from '../components/AdsterraSquareBanner';
 import AdsterraFooterBanner from '../components/AdsterraFooterBanner';
-import HeroFloatingSocials from '../components/HeroFloatingSocials';
 import PlatformCardIcon from '../components/PlatformCardIcon';
 import { HOME_PLATFORMS } from '../constants/platforms';
 import { PAGE_SEO } from '../constants/seo';
@@ -32,7 +31,16 @@ export default function Home() {
       <JsonLd data={[websiteSchema, organizationSchema, webApplicationSchema]} />
 
       <section className="hero section">
-        <HeroFloatingSocials />
+        <div className="hero-bubbles" aria-hidden="true">
+          <span className="hero-bubble hero-bubble--1" />
+          <span className="hero-bubble hero-bubble--2" />
+          <span className="hero-bubble hero-bubble--3" />
+          <span className="hero-bubble hero-bubble--4" />
+          <span className="hero-bubble hero-bubble--5" />
+          <span className="hero-bubble hero-bubble--6" />
+          <span className="hero-bubble hero-bubble--7" />
+          <span className="hero-bubble hero-bubble--8" />
+        </div>
         <div className="container hero-content">
           <h1 className="hero-title">
             Download Videos in HD &amp; Generate Hashtags with FityVid
@@ -44,9 +52,6 @@ export default function Home() {
           </p>
           <DownloaderForm />
         </div>
-        <p className="hero-social-disclaimer">
-          Social-style icons are used for recognition only.
-        </p>
       </section>
 
       <AdsterraBanner />
