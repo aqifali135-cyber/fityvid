@@ -1,3 +1,6 @@
+/** Temporary testing flag — set to true to re-enable Adsterra ads. */
+export const ADS_ENABLED = false;
+
 const DESKTOP_DEFAULT_KEY = 'd490373a510a21fa19dd628af58b29a3';
 const MOBILE_DEFAULT_KEY = '5e714184b8e787316ca74140f7bab84e';
 

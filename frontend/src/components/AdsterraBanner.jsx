@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ADS_ENABLED } from '../constants/adsterra';
 import AdsterraDesktopBanner from './AdsterraDesktopBanner';
 import AdsterraMobileBanner from './AdsterraMobileBanner';
 import './AdsterraBanner.css';
@@ -14,12 +15,20 @@ export default function AdsterraBanner() {
   });
 
   useEffect(() => {
+    if (!ADS_ENABLED) {
+      return undefined;
+    }
+
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA);
     const onChange = (event) => setIsDesktop(event.matches);
 
     mediaQuery.addEventListener('change', onChange);
     return () => mediaQuery.removeEventListener('change', onChange);
   }, []);
+
+  if (!ADS_ENABLED) {
+    return null;
+  }
 
   return (
     <aside

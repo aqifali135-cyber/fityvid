@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ADSTERRA_FOOTER } from '../constants/adsterra';
+import { ADS_ENABLED, ADSTERRA_FOOTER } from '../constants/adsterra';
 import { useAdsterraIframe } from '../hooks/useAdsterraIframe';
 import './AdsterraFooterBanner.css';
 
@@ -20,9 +20,13 @@ export default function AdsterraFooterBanner() {
     return window.matchMedia(FOOTER_MEDIA).matches;
   });
 
-  const iframeRef = useAdsterraIframe(ADSTERRA_FOOTER, isWideEnough);
+  const iframeRef = useAdsterraIframe(ADSTERRA_FOOTER, isWideEnough && ADS_ENABLED);
 
   useEffect(() => {
+    if (!ADS_ENABLED) {
+      return undefined;
+    }
+
     const mediaQuery = window.matchMedia(FOOTER_MEDIA);
     const onChange = (event) => setIsWideEnough(event.matches);
 
@@ -30,7 +34,7 @@ export default function AdsterraFooterBanner() {
     return () => mediaQuery.removeEventListener('change', onChange);
   }, []);
 
-  if (!isWideEnough) {
+  if (!ADS_ENABLED || !isWideEnough) {
     return null;
   }
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { ADS_ENABLED } from '../constants/adsterra';
 import { buildAdsterraSrcDoc } from '../utils/adsterraIframe';
 
 const activeUnitKeys = new Set();
@@ -8,7 +9,7 @@ export function useAdsterraIframe(config, enabled = true) {
   const loadSessionRef = useRef(0);
 
   useEffect(() => {
-    if (!enabled) {
+    if (!ADS_ENABLED || !enabled) {
       return undefined;
     }
 
