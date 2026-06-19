@@ -6,19 +6,27 @@ import { SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE } from '../constants/seo';
  * @param {string} description
  * @param {string} path - Canonical path e.g. "/faq"
  * @param {boolean} noSuffix - If true, do not append "| FityVid"
+ * @param {string} robots - Robots directive (default: indexable pages)
  */
-export default function SEO({ title, description, path = '/', noSuffix = false }) {
+export default function SEO({
+  title,
+  description,
+  path = '/',
+  noSuffix = false,
+  robots = 'index, follow',
+}) {
   const pageTitle = noSuffix || title.includes('FityVid') ? title : `${title} | ${SITE_NAME}`;
   const canonical = `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;
   const ogUrl = canonical;
+  const isNoIndex = robots.includes('noindex');
 
   return (
     <Helmet>
       <html lang="en" />
       <title>{pageTitle}</title>
       {description && <meta name="description" content={description} />}
-      <meta name="robots" content="index, follow" />
-      <link rel="canonical" href={canonical} />
+      <meta name="robots" content={robots} />
+      {!isNoIndex && <link rel="canonical" href={canonical} />}
 
       <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:title" content={pageTitle} />

@@ -21,6 +21,7 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Disclaimer from './pages/Disclaimer';
 import Dmca from './pages/Dmca';
+import NotFound from './pages/NotFound';
 
 export default function App() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/disclaimer" element={<Disclaimer />} />
         <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
         <Route path="/terms" element={<Navigate to="/terms-and-conditions" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>
   );
