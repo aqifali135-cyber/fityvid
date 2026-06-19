@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import Logo from './Logo';
 import './Navbar.css';
 
@@ -15,35 +15,42 @@ const links = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
 
   return (
     <header className="navbar">
-      <div className="container navbar-inner">
-        <Logo size="nav" showText onClick={() => setOpen(false)} />
-        <button
-          type="button"
-          className="navbar-toggle"
-          aria-label="Toggle menu"
-          aria-expanded={open}
-          onClick={() => setOpen(!open)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-        <nav className={`navbar-nav ${open ? 'open' : ''}`}>
-          {links.map(({ to, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === '/'}
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-              onClick={() => setOpen(false)}
-            >
-              {label}
-            </NavLink>
-          ))}
-        </nav>
+      <div className="navbar-shell">
+        <div className="navbar-glass">
+          <Logo size="nav" showText onClick={() => setOpen(false)} />
+          <button
+            type="button"
+            className="navbar-toggle"
+            aria-label="Toggle menu"
+            aria-expanded={open}
+            onClick={() => setOpen(!open)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+          <nav className={`navbar-nav ${open ? 'open' : ''}`} aria-label="Main navigation">
+            {links.map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === '/'}
+                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                onClick={() => setOpen(false)}
+              >
+                <span className="nav-link__label">{label}</span>
+              </NavLink>
+            ))}
+          </nav>
+        </div>
       </div>
     </header>
   );

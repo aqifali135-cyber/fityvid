@@ -3,7 +3,7 @@ import logoMark from '../assets/fityvid-logo.png';
 import './Logo.css';
 
 const SIZES = {
-  nav: { height: 44, maxWidth: 52 },
+  nav: { height: 58, maxWidth: 62 },
   footer: { height: 40, maxWidth: 48 },
   hero: { height: 48, maxWidth: 56 },
   icon: { height: 44, maxWidth: 52 },

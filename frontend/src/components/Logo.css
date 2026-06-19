@@ -31,8 +31,8 @@
 
 .logo-text {
   font-weight: 700;
-  font-size: 1.3rem;
-  color: var(--gray-800);
+  font-size: 1.35rem;
+  color: #0f172a;
   letter-spacing: -0.03em;
   white-space: nowrap;
   line-height: 1;
@@ -50,8 +50,8 @@
 }
 
 .fityvid-logo--nav {
-  height: 44px;
-  max-width: 52px;
+  height: 58px;
+  max-width: 62px;
 }
 
 .fityvid-logo--footer {
@@ -66,8 +66,8 @@
 
 @media (max-width: 480px) {
   .fityvid-logo--nav {
-    height: 40px;
-    max-width: 46px;
+    height: 50px;
+    max-width: 54px;
   }
 
   .logo-text {
