@@ -14,6 +14,15 @@ import {
   buildThumbnailProxyUrl,
   streamInstagramDownload,
 } from './instagramService.js';
+import {
+  buildPublicFormat,
+  pickBestAudioStream,
+  pickBestFormatAtHeight,
+  pickBestVideoOnlyStream,
+  pickProgressiveStreams,
+  formatFileSize,
+} from '../utils/formatHelpers.js';
+import { checkFfmpeg } from './ffmpegService.js';
 
 const PREFERRED_HEIGHTS = [1080, 720, 480, 360];
 
@@ -33,14 +42,6 @@ function formatDuration(seconds) {
     return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
   return `${m}:${String(s).padStart(2, '0')}`;
-}
-
-function formatFileSize(bytes) {
-  if (!bytes || Number(bytes) <= 0) return 'Size may vary';
-  const mb = Number(bytes) / (1024 * 1024);
-  if (mb >= 1024) return `${(mb / 1024).toFixed(1)} GB`;
-  if (mb >= 1) return `${Math.round(mb)} MB`;
-  return `${Math.max(1, Math.round(mb))} MB`;
 }
 
 export function buildDownloadPath({
@@ -76,126 +77,130 @@ function extractThumbnail(info, platform) {
   return candidates[0] || null;
 }
 
-function formatHasAudio(format) {
-  return format.acodec && format.acodec !== 'none';
-}
-
-function pickBestFormat(formats, height) {
-  return formats
-    .filter((f) => f.height === height)
-    .sort((a, b) => (b.filesize || b.filesize_approx || 0) - (a.filesize || a.filesize_approx || 0))[0];
-}
-
 function extractFormatList(info, sourceUrl, platform) {
   const raw = info.formats || [];
   const output = [];
-  const usedHeights = new Set();
+  const usedKeys = new Set();
 
-  const progressive = raw.filter(
-    (f) =>
-      f.url &&
-      f.vcodec &&
-      f.vcodec !== 'none' &&
-      formatHasAudio(f) &&
-      (f.ext === 'mp4' || f.ext === 'webm') &&
-      f.height,
-  );
+  const progressive = pickProgressiveStreams(raw);
+  const videoOnly = pickBestVideoOnlyStream(raw);
+  const bestAudio = pickBestAudioStream(raw);
 
-  const videoOnly = raw.filter(
-    (f) =>
-      f.url &&
-      f.vcodec &&
-      f.vcodec !== 'none' &&
-      (!f.acodec || f.acodec === 'none') &&
-      f.ext === 'mp4' &&
-      f.height,
-  );
-
-  const bestAudio =
-    raw
-      .filter((f) => f.acodec && f.acodec !== 'none' && (!f.vcodec || f.vcodec === 'none'))
-      .sort((a, b) => (b.abr || 0) - (a.abr || 0))[0] || null;
-
-  const mapEntry = (chosen, qualityLabel) => {
-    const hasAudio = formatHasAudio(chosen);
-    const needsMerge =
-      !hasAudio && chosen.format_id && bestAudio
-        ? `${chosen.format_id}+${bestAudio.format_id}`
-        : null;
-    const formatId = needsMerge || String(chosen.format_id);
-
-    return {
-      quality: qualityLabel,
-      format: chosen.ext === 'webm' ? 'webm' : 'mp4',
-      size: formatFileSize(chosen.filesize || chosen.filesize_approx),
-      formatId,
-      audioIncluded: hasAudio || Boolean(needsMerge),
-      needsMerge: Boolean(needsMerge),
-      downloadUrl: buildDownloadPath({
-        videoUrl: sourceUrl,
-        formatId,
-        title: info.title,
-        ext: chosen.ext || 'mp4',
-        platform,
-        needsMerge: Boolean(needsMerge),
-      }),
-    };
+  const addEntry = (entry) => {
+    const key = `${entry.quality}:${entry.formatId}`;
+    if (usedKeys.has(key)) return;
+    usedKeys.add(key);
+    output.push(entry);
   };
 
   for (const height of PREFERRED_HEIGHTS) {
-    let chosen = pickBestFormat(progressive, height);
-
-    if (!chosen) {
-      const video = pickBestFormat(videoOnly, height);
-      if (video && bestAudio) {
-        chosen = { ...video, format_id: `${video.format_id}+${bestAudio.format_id}`, ext: 'mp4' };
-      } else if (video) {
-        chosen = video;
-      }
+    const progressiveMatch = pickBestFormatAtHeight(progressive, height);
+    if (progressiveMatch) {
+      addEntry(
+        buildPublicFormat({
+          quality: `${height}p`,
+          videoFormat: progressiveMatch,
+          formatId: progressiveMatch.format_id,
+          sourceUrl,
+          title: info.title,
+          platform,
+          buildDownloadPath,
+        }),
+      );
+      continue;
     }
 
-    if (chosen && !usedHeights.has(height)) {
-      usedHeights.add(height);
-      output.push(mapEntry(chosen, `${height}p`));
+    const videoMatch = pickBestFormatAtHeight(videoOnly, height);
+    if (videoMatch && bestAudio) {
+      addEntry(
+        buildPublicFormat({
+          quality: `${height}p`,
+          videoFormat: videoMatch,
+          audioFormat: bestAudio,
+          needsMerge: true,
+          formatId: `${videoMatch.format_id}+${bestAudio.format_id}`,
+          sourceUrl,
+          title: info.title,
+          platform,
+          buildDownloadPath,
+        }),
+      );
+      continue;
+    }
+
+    if (videoMatch) {
+      addEntry(
+        buildPublicFormat({
+          quality: `${height}p`,
+          videoFormat: videoMatch,
+          formatId: videoMatch.format_id,
+          sourceUrl,
+          title: info.title,
+          platform,
+          buildDownloadPath,
+        }),
+      );
     }
   }
 
   if (output.length === 0) {
-    const fallback =
-      progressive.sort((a, b) => (b.height || 0) - (a.height || 0))[0] ||
-      videoOnly.sort((a, b) => (b.height || 0) - (a.height || 0))[0];
+    const fallbackProgressive = progressive.sort((a, b) => (b.height || 0) - (a.height || 0))[0];
+    const fallbackVideo = videoOnly[0];
 
-    if (fallback) {
-      const quality = fallback.height ? `${fallback.height}p` : 'Best';
-      let formatId = String(fallback.format_id);
-      const audioIncluded = formatHasAudio(fallback);
-      if (!audioIncluded && bestAudio) {
-        formatId = `${fallback.format_id}+${bestAudio.format_id}`;
-      }
-      output.push({
-        quality,
-        format: fallback.ext === 'webm' ? 'webm' : 'mp4',
-        size: formatFileSize(fallback.filesize || fallback.filesize_approx),
-        formatId,
-        audioIncluded: audioIncluded || Boolean(bestAudio),
-        needsMerge: !audioIncluded && Boolean(bestAudio),
-        downloadUrl: buildDownloadPath({
-          videoUrl: sourceUrl,
-          formatId,
+    if (fallbackProgressive) {
+      addEntry(
+        buildPublicFormat({
+          quality: fallbackProgressive.height ? `${fallbackProgressive.height}p` : 'Best',
+          videoFormat: fallbackProgressive,
+          formatId: fallbackProgressive.format_id,
+          sourceUrl,
           title: info.title,
-          ext: fallback.ext || 'mp4',
           platform,
-          needsMerge: !audioIncluded && Boolean(bestAudio),
+          buildDownloadPath,
         }),
-      });
+      );
+    } else if (fallbackVideo && bestAudio) {
+      addEntry(
+        buildPublicFormat({
+          quality: fallbackVideo.height ? `${fallbackVideo.height}p` : 'Best',
+          videoFormat: fallbackVideo,
+          audioFormat: bestAudio,
+          needsMerge: true,
+          formatId: `${fallbackVideo.format_id}+${bestAudio.format_id}`,
+          sourceUrl,
+          title: info.title,
+          platform,
+          buildDownloadPath,
+        }),
+      );
+    } else if (fallbackVideo) {
+      addEntry(
+        buildPublicFormat({
+          quality: fallbackVideo.height ? `${fallbackVideo.height}p` : 'Best',
+          videoFormat: fallbackVideo,
+          formatId: fallbackVideo.format_id,
+          sourceUrl,
+          title: info.title,
+          platform,
+          buildDownloadPath,
+        }),
+      );
     } else if (info.url) {
-      output.push({
+      addEntry({
         quality: 'Best',
         format: 'mp4',
+        extension: 'mp4',
         size: formatFileSize(info.filesize || info.filesize_approx),
+        filesize: info.filesize || info.filesize_approx || null,
+        videoCodec: null,
+        audioCodec: null,
+        hasVideo: true,
+        hasAudio: true,
+        isProgressive: true,
+        needsMerge: false,
+        audioMergeSupported: false,
         formatId: 'best',
         audioIncluded: true,
-        needsMerge: false,
         downloadUrl: buildDownloadPath({
           videoUrl: sourceUrl,
           formatId: 'best',
@@ -207,10 +212,7 @@ function extractFormatList(info, sourceUrl, platform) {
     }
   }
 
-  return output.map((f) => ({
-    ...f,
-    audioNote: f.audioIncluded ? undefined : 'Audio not available for this video.',
-  }));
+  return output;
 }
 
 async function fetchVideoInfoYtDlp(url) {
@@ -374,6 +376,7 @@ export async function streamDirectDownload(sourceUrl, title, ext, res) {
 
 export async function streamVideoDownload(videoUrl, formatId, title, ext, res, options = {}) {
   const { platform, needsMerge, directUrl } = options;
+  const requiresMerge = needsMerge || String(formatId || '').includes('+');
 
   if (directUrl && isHttpUrl(directUrl)) {
     try {
@@ -392,8 +395,7 @@ export async function streamVideoDownload(videoUrl, formatId, title, ext, res, o
 
   const useInstagramMerge =
     platform === 'instagram' &&
-    (needsMerge ||
-      String(formatId).includes('+') ||
+    (requiresMerge ||
       String(formatId).includes('best'));
 
   if (useInstagramMerge) {
@@ -414,6 +416,26 @@ export async function streamVideoDownload(videoUrl, formatId, title, ext, res, o
     }
   }
 
+  if (requiresMerge) {
+    const ffmpegOk = await checkFfmpeg();
+    if (!ffmpegOk) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('[videoService] FFmpeg unavailable for audio merge', {
+          platform,
+          formatId,
+        });
+      }
+      if (!res.headersSent) {
+        return res.status(503).json({
+          success: false,
+          message:
+            'Audio merging is unavailable on the server. Please choose a lower quality format that includes audio.',
+        });
+      }
+      return;
+    }
+  }
+
   const safeName = sanitizeFilename(title);
   const extension = ext || 'mp4';
   const contentType =
@@ -428,7 +450,11 @@ export async function streamVideoDownload(videoUrl, formatId, title, ext, res, o
   res.setHeader('Content-Type', contentType);
   res.setHeader('Content-Disposition', `attachment; filename="${safeName}.${extension}"`);
 
-  const mergeFormat = formatId.includes('+') ? formatId : formatId;
+  const mergeFormat = String(formatId).includes('+')
+    ? formatId
+    : requiresMerge
+      ? formatId
+      : formatId;
   const args = buildDownloadArgs(mergeFormat, videoUrl, platform || '');
   const proc = spawnYtDlp(args);
   proc.stdout.pipe(res);
@@ -443,7 +469,9 @@ export async function streamVideoDownload(videoUrl, formatId, title, ext, res, o
     if (!res.headersSent) {
       res.status(500).json({
         success: false,
-        message: 'Unable to fetch video details. Please try another public video link.',
+        message: requiresMerge
+          ? 'Unable to merge video and audio. Please try a format that includes audio.'
+          : 'Unable to fetch video details. Please try another public video link.',
       });
     } else {
       res.end();
@@ -455,7 +483,9 @@ export async function streamVideoDownload(videoUrl, formatId, title, ext, res, o
       if (!res.headersSent) {
         res.status(500).json({
           success: false,
-          message: 'Unable to fetch video details. Please try another public video link.',
+          message: requiresMerge
+            ? 'Unable to merge video and audio. Please try a format that includes audio.'
+            : 'Unable to fetch video details. Please try another public video link.',
         });
       } else {
         res.end();

@@ -116,18 +116,44 @@ function unwrapPayload(raw) {
   return raw;
 }
 
+function inferMediaAudioStatus(item) {
+  if (item?.no_audio === true || item?.video_only === true) return false;
+  if (item?.has_audio === true || item?.audio === true) return true;
+  if (item?.has_audio === false || item?.audio === false) return false;
+
+  const type = String(item?.type || '').toLowerCase();
+  if (type === 'video') {
+    return true;
+  }
+
+  return null;
+}
+
 function mediaItemToFormat(item, index) {
   const url = typeof item?.url === 'string' ? item.url.trim() : '';
   if (!isHttpUrl(url)) return null;
 
   const sizeBytes = item.data_size ?? item.size ?? item.filesize ?? item.file_size;
+  const extension = (item.extension || 'mp4').toLowerCase().replace(/^\./, '');
+  const audioStatus = inferMediaAudioStatus(item);
+  const hasAudio = audioStatus === true;
+  const hasVideo = String(item?.type || 'video').toLowerCase() !== 'audio';
 
   return {
     quality: item.height ? `${item.height}p` : item.quality || 'Available',
-    format: (item.extension || 'mp4').toLowerCase().replace(/^\./, ''),
+    format: extension,
+    extension,
     size: sizeBytes ? formatFileSize(sizeBytes) : 'Size may vary',
+    filesize: sizeBytes || null,
+    videoCodec: item.vcodec || null,
+    audioCodec: item.acodec || null,
+    hasVideo,
+    hasAudio,
+    isProgressive: hasVideo && hasAudio,
+    needsMerge: false,
+    audioMergeSupported: false,
     formatId: `rapidapi-${index}`,
-    audioIncluded: null,
+    audioIncluded: audioStatus,
     downloadUrl: url,
   };
 }

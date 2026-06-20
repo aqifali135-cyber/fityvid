@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { getFfmpegPath } from '../services/ffmpegService.js';
 
 const EXTRACTOR_CANDIDATES = [
   { command: 'yt-dlp', prefix: [] },
@@ -150,6 +151,8 @@ export function buildDownloadArgs(formatId, videoUrl, platform, youtubeClientInd
     '-o',
     '-',
   ];
+
+  args.push('--ffmpeg-location', getFfmpegPath());
 
   if (platform === 'youtube') {
     const clients = YOUTUBE_PLAYER_CLIENTS[youtubeClientIndex] ?? YOUTUBE_PLAYER_CLIENTS[0];

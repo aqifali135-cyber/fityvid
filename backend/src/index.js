@@ -6,6 +6,7 @@ import { healthHandler } from './controllers/downloadController.js';
 import { downloadVideo } from './controllers/videoController.js';
 import { videoInfoLimiter, downloadLimiter } from './middleware/rateLimit.js';
 import { checkYtDlp, getYtDlpVersion } from './utils/ytdlpRunner.js';
+import { checkFfmpeg, getFfmpegVersionShort } from './services/ffmpegService.js';
 import { getVideoProvider } from './utils/videoProvider.js';
 import { isRapidApiConfigured } from './services/rapidApiAllInOneService.js';
 
@@ -52,5 +53,13 @@ app.listen(PORT, async () => {
     }
   } else if (ready) {
     console.log(`yt-dlp fallback available: ${getYtDlpVersion() || 'yes'}`);
+  }
+
+  const ffmpegReady = await checkFfmpeg();
+  if (ffmpegReady) {
+    const version = getFfmpegVersionShort();
+    console.log(version ? `FFmpeg: available (${version})` : 'FFmpeg: available');
+  } else {
+    console.log('FFmpeg: not available');
   }
 });

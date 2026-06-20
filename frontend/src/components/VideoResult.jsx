@@ -10,12 +10,34 @@ const PLATFORM_LABELS = {
   facebook: 'Facebook',
 };
 
+function getAudioStatus(fmt) {
+  if (fmt.needsMerge && fmt.audioMergeSupported !== false) {
+    return { label: 'Added during download', positive: true };
+  }
+
+  if (fmt.hasAudio === true || fmt.audioIncluded === true) {
+    return { label: 'Included', positive: true };
+  }
+
+  if (fmt.hasAudio === false || fmt.audioIncluded === false) {
+    return { label: fmt.audioNote || 'Not included', positive: false };
+  }
+
+  if (fmt.audioIncluded === null || fmt.hasAudio === null || fmt.hasAudio === undefined) {
+    return { label: 'Unknown', positive: false };
+  }
+
+  return { label: fmt.audioNote || 'Not included', positive: false };
+}
+
 export default function VideoResult({ data, onReset }) {
   const [downloadWarning, setDownloadWarning] = useState('');
   const hasFormats = data.formats && data.formats.length > 0;
 
   function handleDownload(fmt) {
-    if (fmt.audioIncluded === false) {
+    const noAudio =
+      (fmt.hasAudio === false || fmt.audioIncluded === false) && !fmt.needsMerge;
+    if (noAudio) {
       setDownloadWarning('This video source does not provide audio.');
     } else {
       setDownloadWarning('');
@@ -54,7 +76,9 @@ export default function VideoResult({ data, onReset }) {
         <p className="no-formats">No downloadable format found for this video.</p>
       ) : (
         <ul className="format-list">
-          {data.formats.map((fmt) => (
+          {data.formats.map((fmt) => {
+            const audioStatus = getAudioStatus(fmt);
+            return (
             <li
               key={`${fmt.quality}-${fmt.format}-${fmt.formatId || ''}`}
               className="format-row card"
@@ -65,15 +89,10 @@ export default function VideoResult({ data, onReset }) {
                 <span className="format-size">Size: {fmt.size || 'Size may vary'}</span>
                 <span
                   className={`format-audio ${
-                    fmt.audioIncluded ? 'format-audio--yes' : 'format-audio--no'
+                    audioStatus.positive ? 'format-audio--yes' : 'format-audio--no'
                   }`}
                 >
-                  Audio:{' '}
-                  {fmt.audioIncluded === null
-                    ? 'Unknown'
-                    : fmt.audioIncluded
-                      ? 'Included'
-                      : fmt.audioNote || 'Not available'}
+                  Audio: {audioStatus.label}
                 </span>
               </div>
               <button
@@ -84,7 +103,8 @@ export default function VideoResult({ data, onReset }) {
                 Download
               </button>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
 

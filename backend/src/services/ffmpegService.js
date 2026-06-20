@@ -3,11 +3,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { randomBytes } from 'crypto';
-
-const FFMPEG_CMD = process.env.FFMPEG_PATH || 'ffmpeg';
+import ffmpegStaticPath from 'ffmpeg-static';
 
 let ffmpegChecked = false;
 let ffmpegAvailable = false;
+let ffmpegVersion = null;
+let resolvedFfmpegPath = null;
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -17,18 +18,34 @@ function devLog(...args) {
   }
 }
 
+export function getFfmpegPath() {
+  if (!resolvedFfmpegPath) {
+    resolvedFfmpegPath =
+      process.env.FFMPEG_PATH ||
+      (typeof ffmpegStaticPath === 'string' && ffmpegStaticPath ? ffmpegStaticPath : null) ||
+      'ffmpeg';
+  }
+  return resolvedFfmpegPath;
+}
+
 function runCommand(command, args, timeoutMs = 300000) {
   return new Promise((resolve, reject) => {
+    const useShell = command === 'ffmpeg' && process.platform === 'win32';
     const proc = spawn(command, args, {
-      shell: process.platform === 'win32',
+      shell: useShell,
       windowsHide: true,
     });
 
+    let stdout = '';
     let stderr = '';
     const timer = setTimeout(() => {
       proc.kill();
       reject(new Error('FFmpeg timed out'));
     }, timeoutMs);
+
+    proc.stdout?.on('data', (chunk) => {
+      stdout += chunk.toString();
+    });
 
     proc.stderr.on('data', (chunk) => {
       stderr += chunk.toString();
@@ -45,22 +62,37 @@ function runCommand(command, args, timeoutMs = 300000) {
         reject(new Error(stderr.trim() || `FFmpeg exited with code ${code}`));
         return;
       }
-      resolve();
+      resolve(stdout || stderr);
     });
   });
+}
+
+export function getFfmpegVersion() {
+  return ffmpegVersion;
+}
+
+export function getFfmpegVersionShort() {
+  if (!ffmpegVersion) return null;
+  return ffmpegVersion.match(/ffmpeg version ([^\s,]+)/i)?.[1] || null;
 }
 
 export async function checkFfmpeg() {
   if (ffmpegChecked) return ffmpegAvailable;
   ffmpegChecked = true;
+
+  const ffmpegPath = getFfmpegPath();
+
   try {
-    await runCommand(FFMPEG_CMD, ['-version'], 15000);
+    const output = await runCommand(ffmpegPath, ['-version'], 15000);
+    ffmpegVersion = String(output).split('\n')[0]?.trim() || null;
     ffmpegAvailable = true;
-    devLog('FFmpeg is available');
-  } catch {
+    devLog('FFmpeg is available:', getFfmpegVersionShort() || ffmpegVersion);
+  } catch (err) {
     ffmpegAvailable = false;
-    devLog('FFmpeg is NOT available — host backend on Render/Railway/VPS with FFmpeg for Instagram audio merge');
+    ffmpegVersion = null;
+    devLog('FFmpeg is NOT available', err.message);
   }
+
   return ffmpegAvailable;
 }
 
@@ -81,14 +113,11 @@ export async function cleanupDir(dir) {
 }
 
 /**
- * Merge video and audio files into one MP4.
- */
-/**
  * Merge local video and audio files into MP4 (used for Instagram downloads).
  */
 export async function mergeVideoAudio(videoPath, audioPath, outputPath) {
   devLog('Merging', videoPath, '+', audioPath, '->', outputPath);
-  await runCommand(FFMPEG_CMD, [
+  await runCommand(getFfmpegPath(), [
     '-y',
     '-i',
     videoPath,
