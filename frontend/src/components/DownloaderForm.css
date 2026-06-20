@@ -603,6 +603,26 @@
   }
 }
 
+@media (max-width: 768px) {
+  .hero-form-stack {
+    margin-top: 28px;
+    padding-left: 16px;
+    padding-right: 16px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .hero-downloader-form {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .hero-input-row {
+    max-width: 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .platform-icon-circle,
   .hero-input-row .download-submit-button {
