@@ -5,7 +5,7 @@
  * npm run generate:category-images
  *
  * Photo mapping is defined in scripts/category-photo-sources.mjs.
- * TODO: Replace procedural color-theme sources (black, red, white, green, blue, pink, colour)
+ * TODO: Replace procedural color-theme sources (black, red, white, green, pink, christmas)
  * with dedicated photo assets when available.
  */
 

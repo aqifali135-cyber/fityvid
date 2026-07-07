@@ -26,6 +26,15 @@ function assertAllSlugsMapped() {
   }
 }
 
+async function fetchPicsumBuffer(photoId) {
+  const url = `https://picsum.photos/id/${photoId}/${WIDTH}/${HEIGHT}`;
+  const res = await fetch(url, { redirect: 'follow' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch Picsum photo ${photoId}: ${res.status}`);
+  }
+  return Buffer.from(await res.arrayBuffer());
+}
+
 async function fetchUnsplashBuffer(photoId) {
   const url = `https://images.unsplash.com/photo-${photoId}?auto=format&fit=crop&w=${WIDTH}&h=${HEIGHT}&q=80`;
   const res = await fetch(url, { redirect: 'follow' });
@@ -77,6 +86,10 @@ async function loadSourceBuffer(slug, title) {
 
   if (source.startsWith('unsplash:')) {
     return fetchUnsplashBuffer(source.replace('unsplash:', ''));
+  }
+
+  if (source.startsWith('picsum:')) {
+    return fetchPicsumBuffer(source.replace('picsum:', ''));
   }
 
   if (source.startsWith('procedural:')) {
@@ -134,12 +147,20 @@ async function main() {
   assertAllSlugsMapped();
   fs.mkdirSync(outDir, { recursive: true });
 
-  for (const cat of HASHTAG_CATEGORIES) {
+  const targetSlugs = process.env.CATEGORY_SLUGS
+    ? process.env.CATEGORY_SLUGS.split(',').map((s) => s.trim()).filter(Boolean)
+    : null;
+
+  const categories = targetSlugs
+    ? HASHTAG_CATEGORIES.filter((cat) => targetSlugs.includes(cat.slug))
+    : HASHTAG_CATEGORIES;
+
+  for (const cat of categories) {
     const source = await loadSourceBuffer(cat.slug, cat.title);
     await writeCollages(source, cat.slug, outDir);
   }
 
-  console.log(`Generated ${HASHTAG_CATEGORIES.length} remapped category photo sets in ${outDir}`);
+  console.log(`Generated ${categories.length} category photo sets in ${outDir}`);
 }
 
 main().catch((err) => {
