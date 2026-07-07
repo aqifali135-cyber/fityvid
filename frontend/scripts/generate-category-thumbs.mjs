@@ -33,9 +33,11 @@ function getCoverPosition(slug) {
 }
 
 function getCollageCrops(slug, srcWidth, srcHeight) {
-  const seed = hashSlug(slug);
+  const useCenter =
+    SUBJECT_CENTER_SLUGS.has(slug)
+    || ['flower', 'rainbow', 'sky', 'sunset', 'night', 'summer', 'architecture', 'festival', 'sushi', 'chocolate', 'jewelry', 'bag', 'dress', 'look', 'design', 'dancing', 'tatto', 'news', 'colour', 'blue', 'baby', 'kid', 'animal', 'fox-quotes', 'birthday', 'love', 'workout', 'jokeday', 'funny'].includes(slug);
 
-  if (SUBJECT_CENTER_SLUGS.has(slug)) {
+  if (useCenter) {
     const focusWidth = Math.min(280, srcWidth);
     const focusHeight = Math.min(180, srcHeight);
     const focusLeft = Math.max(0, Math.floor((srcWidth - focusWidth) / 2));
@@ -52,6 +54,7 @@ function getCollageCrops(slug, srcWidth, srcHeight) {
     ];
   }
 
+  const seed = hashSlug(slug);
   const crop1Left = Math.min((seed % 4) * 35, Math.max(0, srcWidth - 280));
   const crop1Top = Math.min((seed % 3) * 25, Math.max(0, srcHeight - 180));
   const crop2Left = Math.min(100 + (seed % 5) * 28, Math.max(0, srcWidth - 240));
@@ -152,21 +155,19 @@ async function loadSourceBuffer(slug, title) {
 
   for (const candidate of candidates) {
     try {
+      let buffer;
       if (candidate.startsWith('unsplash:')) {
-        return await fetchUnsplashBuffer(candidate.replace('unsplash:', ''));
-      }
-
-      if (candidate.startsWith('picsum:')) {
-        return await fetchPicsumBuffer(candidate.replace('picsum:', ''));
-      }
-
-      if (candidate.startsWith('procedural:')) {
+        buffer = await fetchUnsplashBuffer(candidate.replace('unsplash:', ''));
+      } else if (candidate.startsWith('picsum:')) {
+        buffer = await fetchPicsumBuffer(candidate.replace('picsum:', ''));
+      } else if (candidate.startsWith('procedural:')) {
         const key = candidate.replace('procedural:', '');
         const svg = proceduralSvg(key, title);
-        return await sharp(Buffer.from(svg)).png().toBuffer();
+        buffer = await sharp(Buffer.from(svg)).png().toBuffer();
+      } else {
+        throw new Error(`Unsupported source type: ${candidate}`);
       }
-
-      throw new Error(`Unsupported source type: ${candidate}`);
+      return buffer;
     } catch (err) {
       errors.push(`${candidate}: ${err.message}`);
     }
