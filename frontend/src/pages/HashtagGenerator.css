@@ -41,6 +41,10 @@
   padding-bottom: 2rem;
 }
 
+.hashtag-generator-section .container {
+  max-width: 1040px;
+}
+
 .hashtag-categories-section {
   padding-top: 0;
   padding-bottom: 3rem;
