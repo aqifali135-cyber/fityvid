@@ -10,6 +10,69 @@ const outDir = path.join(__dirname, '../public/hashtag-categories');
 const WIDTH = 640;
 const HEIGHT = 400;
 
+/** Slugs where the main subject should stay centered and fully visible. */
+const SUBJECT_CENTER_SLUGS = new Set([
+  'dog',
+  'puppy',
+  'yoga',
+  'eyes',
+  'smile',
+  'baby',
+  'kid',
+  'cat',
+  'portrait',
+  'selfie',
+  'tatto',
+]);
+
+function getCoverPosition(slug) {
+  if (SUBJECT_CENTER_SLUGS.has(slug)) return 'attention';
+  if (slug === 'sunset' || slug === 'sky' || slug === 'rainbow' || slug === 'night') return 'centre';
+  const seed = hashSlug(slug);
+  return seed % 3 === 0 ? 'top' : seed % 3 === 1 ? 'centre' : 'bottom';
+}
+
+function getCollageCrops(slug, srcWidth, srcHeight) {
+  const seed = hashSlug(slug);
+
+  if (SUBJECT_CENTER_SLUGS.has(slug)) {
+    const focusWidth = Math.min(280, srcWidth);
+    const focusHeight = Math.min(180, srcHeight);
+    const focusLeft = Math.max(0, Math.floor((srcWidth - focusWidth) / 2));
+    const focusTop = Math.max(0, Math.floor((srcHeight - focusHeight) / 2));
+
+    const detailWidth = Math.min(240, srcWidth);
+    const detailHeight = Math.min(160, srcHeight);
+    const detailLeft = Math.max(0, Math.min(focusLeft + 40, srcWidth - detailWidth));
+    const detailTop = Math.max(0, Math.min(focusTop + 30, srcHeight - detailHeight));
+
+    return [
+      { left: focusLeft, top: focusTop, width: focusWidth, height: focusHeight },
+      { left: detailLeft, top: detailTop, width: detailWidth, height: detailHeight },
+    ];
+  }
+
+  const crop1Left = Math.min((seed % 4) * 35, Math.max(0, srcWidth - 280));
+  const crop1Top = Math.min((seed % 3) * 25, Math.max(0, srcHeight - 180));
+  const crop2Left = Math.min(100 + (seed % 5) * 28, Math.max(0, srcWidth - 240));
+  const crop2Top = Math.min(50 + (seed % 4) * 22, Math.max(0, srcHeight - 160));
+
+  return [
+    {
+      left: crop1Left,
+      top: crop1Top,
+      width: Math.min(280, srcWidth - crop1Left),
+      height: Math.min(180, srcHeight - crop1Top),
+    },
+    {
+      left: crop2Left,
+      top: crop2Top,
+      width: Math.min(240, srcWidth - crop2Left),
+      height: Math.min(160, srcHeight - crop2Top),
+    },
+  ];
+}
+
 function hashSlug(slug) {
   let h = 0;
   for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
@@ -84,57 +147,56 @@ async function loadSourceBuffer(slug, title) {
     throw new Error(`No photo source for slug: ${slug}`);
   }
 
-  if (source.startsWith('unsplash:')) {
-    return fetchUnsplashBuffer(source.replace('unsplash:', ''));
+  const candidates = source.split('|').map((entry) => entry.trim()).filter(Boolean);
+  const errors = [];
+
+  for (const candidate of candidates) {
+    try {
+      if (candidate.startsWith('unsplash:')) {
+        return await fetchUnsplashBuffer(candidate.replace('unsplash:', ''));
+      }
+
+      if (candidate.startsWith('picsum:')) {
+        return await fetchPicsumBuffer(candidate.replace('picsum:', ''));
+      }
+
+      if (candidate.startsWith('procedural:')) {
+        const key = candidate.replace('procedural:', '');
+        const svg = proceduralSvg(key, title);
+        return await sharp(Buffer.from(svg)).png().toBuffer();
+      }
+
+      throw new Error(`Unsupported source type: ${candidate}`);
+    } catch (err) {
+      errors.push(`${candidate}: ${err.message}`);
+    }
   }
 
-  if (source.startsWith('picsum:')) {
-    return fetchPicsumBuffer(source.replace('picsum:', ''));
-  }
-
-  if (source.startsWith('procedural:')) {
-    const key = source.replace('procedural:', '');
-    const svg = proceduralSvg(key, title);
-    return sharp(Buffer.from(svg)).png().toBuffer();
-  }
-
-  throw new Error(`Unsupported source for ${slug}: ${source}`);
+  throw new Error(`All photo sources failed for ${slug}\n${errors.join('\n')}`);
 }
 
 async function writeCollages(source, slug, outBase) {
-  const seed = hashSlug(slug);
   const meta = await sharp(source).metadata();
   const srcWidth = meta.width || WIDTH;
   const srcHeight = meta.height || HEIGHT;
+  const coverPosition = getCoverPosition(slug);
 
   const main = await sharp(source)
-    .resize(WIDTH, HEIGHT, { fit: 'cover', position: seed % 3 === 0 ? 'top' : seed % 3 === 1 ? 'centre' : 'bottom' })
+    .resize(WIDTH, HEIGHT, { fit: 'cover', position: coverPosition })
     .webp({ quality: 76 })
     .toBuffer();
 
-  const crop1Left = Math.min((seed % 4) * 35, Math.max(0, srcWidth - 280));
-  const crop1Top = Math.min((seed % 3) * 25, Math.max(0, srcHeight - 180));
+  const [crop1, crop2] = getCollageCrops(slug, srcWidth, srcHeight);
+
   const collage1 = await sharp(source)
-    .extract({
-      left: crop1Left,
-      top: crop1Top,
-      width: Math.min(280, srcWidth - crop1Left),
-      height: Math.min(180, srcHeight - crop1Top),
-    })
-    .resize(200, 130, { fit: 'cover' })
+    .extract(crop1)
+    .resize(200, 130, { fit: 'cover', position: coverPosition })
     .webp({ quality: 72 })
     .toBuffer();
 
-  const crop2Left = Math.min(100 + (seed % 5) * 28, Math.max(0, srcWidth - 240));
-  const crop2Top = Math.min(50 + (seed % 4) * 22, Math.max(0, srcHeight - 160));
   const collage2 = await sharp(source)
-    .extract({
-      left: crop2Left,
-      top: crop2Top,
-      width: Math.min(240, srcWidth - crop2Left),
-      height: Math.min(160, srcHeight - crop2Top),
-    })
-    .resize(180, 120, { fit: 'cover' })
+    .extract(crop2)
+    .resize(180, 120, { fit: 'cover', position: coverPosition })
     .webp({ quality: 72 })
     .toBuffer();
 
