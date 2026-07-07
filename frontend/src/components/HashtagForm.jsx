@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { forwardRef, useImperativeHandle, useState } from 'react';
 import { generateHashtags } from '../api/client';
 import HashtagResult from './HashtagResult';
 import './HashtagForm.css';
@@ -85,7 +85,7 @@ const EXAMPLE_KEYWORDS = [
   'small business tips',
 ];
 
-export default function HashtagForm() {
+const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
   const [topic, setTopic] = useState('');
   const [platform, setPlatform] = useState('');
   const [contentType, setContentType] = useState('post');
@@ -95,6 +95,19 @@ export default function HashtagForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+
+  useImperativeHandle(ref, () => ({
+    setTopicAndFocus(value) {
+      setTopic(value);
+      setError('');
+      requestAnimationFrame(() => {
+        document.getElementById('topic')?.focus({ preventScroll: true });
+      });
+    },
+    getTopic() {
+      return topic;
+    },
+  }));
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -143,18 +156,21 @@ export default function HashtagForm() {
   function handleExampleClick(keyword) {
     setTopic(keyword);
     setError('');
+    onTopicChange?.(keyword);
   }
 
   function handleTopicChange(e) {
-    setTopic(e.target.value);
+    const value = e.target.value;
+    setTopic(value);
     setError('');
+    onTopicChange?.(value);
   }
 
   const activeExample = EXAMPLE_KEYWORDS.find((keyword) => keyword === topic.trim()) ?? '';
 
   return (
-    <div className="hashtag-form-wrapper">
-      <form className="hashtag-form card" onSubmit={handleSubmit}>
+    <div className="hashtag-form-wrapper" id="hashtag-generator-form">
+      <form className="hashtag-form card hashtag-form--premium" onSubmit={handleSubmit}>
         <div className="form-group">
           <label className="label" htmlFor="topic">Topic / Keyword</label>
           <input
@@ -315,4 +331,6 @@ export default function HashtagForm() {
       )}
     </div>
   );
-}
+});
+
+export default HashtagForm;
