@@ -1,6 +1,10 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { generateAllPlatformHashtags } from '../utils/platformHashtagGenerator';
 import HashtagResult from './HashtagResult';
+import HashtagSubscriptionGate, {
+  isHashtagFreeSearchUsed,
+  markHashtagFreeSearchUsed,
+} from './HashtagSubscriptionGate';
 import './HashtagForm.css';
 
 const MODES = [
@@ -127,6 +131,7 @@ const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [showSubscriptionGate, setShowSubscriptionGate] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -151,7 +156,20 @@ const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
 
   async function runGeneration(generationTopic) {
     setError('');
+
+    if (isHashtagFreeSearchUsed()) {
+      setShowSubscriptionGate(true);
+      setTimeout(() => {
+        document.getElementById('hashtag-subscription-gate')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 100);
+      return;
+    }
+
     setResult(null);
+    setShowSubscriptionGate(false);
 
     if (!generationTopic.trim()) {
       setError('Please enter a topic or description.');
@@ -172,6 +190,7 @@ const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
         setError('Unable to generate hashtags. Please try again.');
         return;
       }
+      markHashtagFreeSearchUsed();
       setResult(data);
       setTimeout(() => {
         document.getElementById('hashtag-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -383,7 +402,9 @@ const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
         </form>
       </div>
 
-      {result && (
+      {showSubscriptionGate && <HashtagSubscriptionGate />}
+
+      {result && !showSubscriptionGate && (
         <div id="hashtag-results">
           <HashtagResult data={result} onGenerateAgain={handleGenerateAgain} />
         </div>

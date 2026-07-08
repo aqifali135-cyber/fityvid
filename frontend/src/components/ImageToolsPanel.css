@@ -1,0 +1,226 @@
+.image-tools-panel-section {
+  padding: 0 0 2.25rem;
+}
+
+.image-tools-panel {
+  max-width: 980px;
+  margin: 0 auto;
+  border: 1px solid var(--gray-200);
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06);
+}
+
+.image-tools-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.image-tools-panel__eyebrow {
+  margin: 0 0 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #db2777;
+}
+
+.image-tools-panel__title {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.2rem, 3vw, 1.45rem);
+  font-weight: 800;
+  color: var(--gray-800);
+}
+
+.image-tools-panel__subtitle {
+  margin: 0;
+  max-width: 560px;
+  font-size: 0.9rem;
+  color: var(--gray-600);
+}
+
+.image-tools-panel__upload-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 120px;
+  padding: 1rem;
+  border: 2px dashed rgba(219, 39, 119, 0.35);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff7fb 0%, #ffffff 100%);
+  cursor: pointer;
+}
+
+.image-tools-panel__upload-box input {
+  display: none;
+}
+
+.image-tools-panel__upload-title {
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+.image-tools-panel__upload-hint {
+  font-size: 0.85rem;
+  color: var(--gray-500, #6b7280);
+  text-align: center;
+  word-break: break-all;
+}
+
+.image-tools-panel__note {
+  margin: 0.85rem 0 0;
+  font-size: 0.86rem;
+  color: var(--gray-600);
+}
+
+.image-tools-panel__controls {
+  margin-top: 1rem;
+}
+
+.image-tools-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.image-tools-panel__grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--gray-700, #374151);
+}
+
+.image-tools-panel__grid input,
+.image-tools-panel__grid select {
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.image-tools-panel__span2 {
+  grid-column: 1 / -1;
+}
+
+.image-tools-panel__checkbox {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.5rem !important;
+}
+
+.image-tools-panel__inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.image-tools-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.image-tools-panel__status {
+  margin: 0.75rem 0 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #047857;
+}
+
+.image-tools-panel__previews {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1.15rem;
+}
+
+.image-tools-panel__preview-card {
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 0.85rem;
+  background: #fafbfc;
+  min-height: 220px;
+}
+
+.image-tools-panel__preview-card h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.92rem;
+}
+
+.image-tools-panel__preview-card img {
+  display: block;
+  width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid var(--gray-100);
+}
+
+.image-tools-panel__empty {
+  margin: 2rem 0;
+  text-align: center;
+  color: var(--gray-400);
+  font-size: 0.9rem;
+}
+
+.image-tools-panel__meta {
+  margin: 0.55rem 0 0;
+  font-size: 0.8rem;
+  color: var(--gray-500, #6b7280);
+}
+
+.image-tools-panel__palette {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.image-tools-panel__swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.55rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.image-tools-panel__swatch-color {
+  display: block;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.image-tools-panel__swatch-hex {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gray-700, #374151);
+}
+
+.image-tools-panel__swatch.is-copied .image-tools-panel__swatch-hex {
+  color: #db2777;
+}
+
+@media (max-width: 800px) {
+  .image-tools-panel__previews,
+  .image-tools-panel__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .image-tools-panel__head {
+    flex-direction: column;
+  }
+}

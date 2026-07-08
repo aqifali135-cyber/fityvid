@@ -19,6 +19,7 @@ const SITE_LINKS = [
 
 const HASHTAG_LINKS = [
   { to: '/hashtag-generator', label: 'Hashtag Generator' },
+  { to: '/stylish-text-generator', label: 'Stylish Text Generator' },
   { to: '/tiktok-hashtag-generator', label: 'TikTok Hashtag Generator' },
   { to: '/instagram-hashtag-generator', label: 'Instagram Hashtag Generator' },
   { to: '/youtube-hashtag-generator', label: 'YouTube Hashtag Generator' },

@@ -33,6 +33,12 @@ export const PAGE_SEO = {
     description:
       'Generate relevant hashtags for posts, reels, Shorts, and videos. Free hashtag tool for TikTok, Instagram, YouTube, and Facebook creators on FityVid.',
   },
+  stylishTextGenerator: {
+    path: '/stylish-text-generator',
+    title: 'Stylish Text Generator',
+    description:
+      'Convert normal text into stylish fonts for Instagram bio, TikTok captions, Facebook posts, YouTube descriptions, and usernames. Free, instant, and works in your browser.',
+  },
   tiktokHashtagGenerator: {
     path: '/tiktok-hashtag-generator',
     title: 'TikTok Hashtag Generator — Free Tag Ideas for TikTok Videos | FityVid',
