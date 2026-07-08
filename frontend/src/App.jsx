@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
 import Platforms from './pages/Platforms';
 import HashtagGenerator from './pages/HashtagGenerator';
+import StylishTextGenerator from './pages/StylishTextGenerator';
 import TiktokHashtagGenerator from './pages/TiktokHashtagGenerator';
 import InstagramHashtagGenerator from './pages/InstagramHashtagGenerator';
 import YoutubeHashtagGenerator from './pages/YoutubeHashtagGenerator';
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="/platforms" element={<Platforms />} />
         <Route path="/hashtag-generator" element={<HashtagGenerator />} />
+        <Route path="/stylish-text-generator" element={<StylishTextGenerator />} />
         <Route path="/tiktok-hashtag-generator" element={<TiktokHashtagGenerator />} />
         <Route path="/instagram-hashtag-generator" element={<InstagramHashtagGenerator />} />
         <Route path="/youtube-hashtag-generator" element={<YoutubeHashtagGenerator />} />
