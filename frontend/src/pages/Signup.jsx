@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 import SEO from '../components/SEO';
 import { useAuth } from '../context/AuthContext';
 import './AuthPages.css';
 
 export default function Signup() {
-  const { signup, isAuthenticated, loading: authLoading } = useAuth();
+  const { signup, loginWithGoogle, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -13,6 +14,29 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const busy = loading;
+
+  const handleGoogleCredential = useCallback(
+    async (response) => {
+      if (!response?.credential) {
+        setError('Google sign-in failed. Please try again.');
+        return;
+      }
+
+      setError('');
+      setLoading(true);
+      try {
+        await loginWithGoogle({ credential: response.credential });
+        navigate('/account', { replace: true });
+      } catch (err) {
+        setError(err.message || 'Google sign-in failed. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loginWithGoogle, navigate],
+  );
 
   if (!authLoading && isAuthenticated) {
     return <Navigate to="/account" replace />;
@@ -68,6 +92,12 @@ export default function Signup() {
             </p>
           )}
 
+          <GoogleSignInButton onCredential={handleGoogleCredential} disabled={busy} />
+
+          <div className="auth-divider" aria-hidden="true">
+            <span>or create account with email</span>
+          </div>
+
           <div className="form-group">
             <label className="label" htmlFor="signup-name">
               Name
@@ -80,7 +110,7 @@ export default function Signup() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              disabled={loading}
+              disabled={busy}
             />
           </div>
 
@@ -96,7 +126,7 @@ export default function Signup() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              disabled={loading}
+              disabled={busy}
             />
           </div>
 
@@ -113,7 +143,7 @@ export default function Signup() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              disabled={loading}
+              disabled={busy}
             />
           </div>
 
@@ -130,11 +160,11 @@ export default function Signup() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={8}
-              disabled={loading}
+              disabled={busy}
             />
           </div>
 
-          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+          <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
             {loading ? 'Creating account…' : 'Sign up'}
           </button>
 

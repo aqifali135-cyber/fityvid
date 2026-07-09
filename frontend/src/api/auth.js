@@ -48,6 +48,13 @@ export function loginUser({ email, password }) {
   });
 }
 
+export function googleLoginUser({ credential }) {
+  return authFetch('/api/auth/google', {
+    method: 'POST',
+    body: JSON.stringify({ credential }),
+  });
+}
+
 export async function fetchCurrentUser() {
   const token = getStoredToken();
   if (!token) {

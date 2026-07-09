@@ -49,7 +49,10 @@ export async function ensureUsersTable() {
       id VARCHAR(64) PRIMARY KEY,
       name VARCHAR(150) NOT NULL,
       email VARCHAR(255) NOT NULL UNIQUE,
-      password_hash VARCHAR(255) NOT NULL,
+      password_hash VARCHAR(255) NULL,
+      google_id VARCHAR(255) NULL,
+      auth_provider VARCHAR(50) NOT NULL DEFAULT 'email',
+      avatar_url VARCHAR(500) NULL,
       hashtag_free_search_used TINYINT(1) DEFAULT 0,
       credit_balance INT NOT NULL DEFAULT 60,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -62,6 +65,23 @@ export async function ensureUsersTable() {
       'ALTER TABLE users ADD COLUMN credit_balance INT NOT NULL DEFAULT 60',
     );
   }
+
+  if (!(await columnExists('users', 'google_id'))) {
+    await db.execute('ALTER TABLE users ADD COLUMN google_id VARCHAR(255) NULL');
+  }
+
+  if (!(await columnExists('users', 'auth_provider'))) {
+    await db.execute(
+      "ALTER TABLE users ADD COLUMN auth_provider VARCHAR(50) NOT NULL DEFAULT 'email'",
+    );
+  }
+
+  if (!(await columnExists('users', 'avatar_url'))) {
+    await db.execute('ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500) NULL');
+  }
+
+  // Allow Google-only accounts without a password hash
+  await db.execute('ALTER TABLE users MODIFY password_hash VARCHAR(255) NULL');
 }
 
 export async function ensureCreditTransactionsTable() {

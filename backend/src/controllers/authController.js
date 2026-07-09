@@ -1,9 +1,13 @@
 import bcrypt from 'bcryptjs';
+import { OAuth2Client } from 'google-auth-library';
 import { requireAuth, signAuthToken } from '../middleware/auth.js';
 import {
+  createGoogleUser,
   createUser,
   findUserByEmail,
+  findUserByGoogleId,
   findUserById,
+  linkGoogleProfile,
   sanitizeUser,
 } from '../services/userStore.js';
 
@@ -80,7 +84,7 @@ export async function login(req, res) {
     }
 
     const user = await findUserByEmail(email);
-    if (!user) {
+    if (!user || !user.passwordHash) {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password.',
@@ -132,6 +136,102 @@ export function logout(_req, res) {
     success: true,
     message: 'Logged out successfully.',
   });
+}
+
+export async function googleAuth(req, res) {
+  try {
+    const clientId = process.env.GOOGLE_CLIENT_ID?.trim();
+    if (!clientId) {
+      return res.status(503).json({
+        success: false,
+        message: 'Google sign-in is not configured.',
+      });
+    }
+
+    const credential = String(req.body?.credential || '').trim();
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google sign-in failed. Please try again.',
+      });
+    }
+
+    const client = new OAuth2Client(clientId);
+    let payload;
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: clientId,
+      });
+      payload = ticket.getPayload();
+    } catch {
+      return res.status(401).json({
+        success: false,
+        message: 'Google sign-in failed. Please try again.',
+      });
+    }
+
+    const googleId = String(payload?.sub || '').trim();
+    const email = String(payload?.email || '').trim().toLowerCase();
+    const name = String(payload?.name || payload?.given_name || email.split('@')[0] || 'User').trim();
+    const picture = payload?.picture ? String(payload.picture).trim() : null;
+
+    if (!googleId || !email || !validateEmail(email)) {
+      return res.status(401).json({
+        success: false,
+        message: 'Google sign-in failed. Please try again.',
+      });
+    }
+
+    let user = (await findUserByGoogleId(googleId)) || (await findUserByEmail(email));
+
+    if (user) {
+      user = await linkGoogleProfile(user.id, {
+        googleId: user.googleId || googleId,
+        name: user.name || name,
+        avatarUrl: picture || user.avatarUrl,
+      });
+    } else {
+      try {
+        user = await createGoogleUser({
+          name,
+          email,
+          googleId,
+          avatarUrl: picture,
+        });
+      } catch (error) {
+        if (error.code === 'EMAIL_EXISTS') {
+          const existing = await findUserByEmail(email);
+          if (!existing) throw error;
+          user = await linkGoogleProfile(existing.id, {
+            googleId: existing.googleId || googleId,
+            name: existing.name || name,
+            avatarUrl: picture || existing.avatarUrl,
+          });
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    const safeUser = sanitizeUser(await findUserById(user.id));
+    const token = signAuthToken(safeUser);
+
+    return res.json({
+      success: true,
+      message: 'Logged in successfully.',
+      user: safeUser,
+      token,
+    });
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Google auth error:', error);
+    }
+    return res.status(500).json({
+      success: false,
+      message: 'Google sign-in failed. Please try again.',
+    });
+  }
 }
 
 export { requireAuth };

@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 import SEO from '../components/SEO';
 import { useAuth } from '../context/AuthContext';
 import './AuthPages.css';
 
 export default function Login() {
-  const { login, isAuthenticated, loading: authLoading } = useAuth();
+  const { login, loginWithGoogle, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState('');
@@ -13,8 +14,32 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const redirectTo = location.state?.from || '/account';
+  const busy = loading;
+
+  const handleGoogleCredential = useCallback(
+    async (response) => {
+      if (!response?.credential) {
+        setError('Google sign-in failed. Please try again.');
+        return;
+      }
+
+      setError('');
+      setLoading(true);
+      try {
+        await loginWithGoogle({ credential: response.credential });
+        navigate(redirectTo, { replace: true });
+      } catch (err) {
+        setError(err.message || 'Google sign-in failed. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loginWithGoogle, navigate, redirectTo],
+  );
+
   if (!authLoading && isAuthenticated) {
-    return <Navigate to={location.state?.from || '/account'} replace />;
+    return <Navigate to={redirectTo} replace />;
   }
 
   async function handleSubmit(e) {
@@ -23,7 +48,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login({ email: email.trim(), password });
-      navigate(location.state?.from || '/account', { replace: true });
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(err.message || 'Unable to log in. Please try again.');
     } finally {
@@ -53,6 +78,12 @@ export default function Login() {
             </p>
           )}
 
+          <GoogleSignInButton onCredential={handleGoogleCredential} disabled={busy} />
+
+          <div className="auth-divider" aria-hidden="true">
+            <span>or continue with email</span>
+          </div>
+
           <div className="form-group">
             <label className="label" htmlFor="login-email">
               Email
@@ -65,7 +96,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              disabled={loading}
+              disabled={busy}
             />
           </div>
 
@@ -82,11 +113,11 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              disabled={loading}
+              disabled={busy}
             />
           </div>
 
-          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+          <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
             {loading ? 'Logging in…' : 'Log in'}
           </button>
 

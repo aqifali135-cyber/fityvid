@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
   fetchCurrentUser,
+  googleLoginUser,
   loginUser,
   logoutUser,
   signupUser,
@@ -82,6 +83,13 @@ export function AuthProvider({ children }) {
     return data;
   }, []);
 
+  const loginWithGoogle = useCallback(async ({ credential }) => {
+    const data = await googleLoginUser({ credential });
+    if (data?.token) storeAuthToken(data.token);
+    setUser(data.user || null);
+    return data;
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await logoutUser();
@@ -108,12 +116,13 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(user),
       signup,
       login,
+      loginWithGoogle,
       logout,
       refreshUser,
       refreshCredits,
       spendCredits,
     }),
-    [user, loading, signup, login, logout, refreshUser, refreshCredits, spendCredits],
+    [user, loading, signup, login, loginWithGoogle, logout, refreshUser, refreshCredits, spendCredits],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
