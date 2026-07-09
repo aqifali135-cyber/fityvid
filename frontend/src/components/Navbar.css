@@ -281,6 +281,19 @@
   font-family: inherit;
 }
 
+.navbar-credits {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(237, 233, 254, 0.95);
+  border: 1px solid rgba(167, 139, 250, 0.28);
+  color: #5b21b6;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 @media (max-width: 1200px) {
   .navbar-nav {
     gap: 0.15rem;
@@ -361,6 +374,12 @@
     border-top: 1px solid rgba(167, 139, 250, 0.18);
     flex-direction: column;
     align-items: stretch;
+    gap: 0.45rem;
+  }
+
+  .navbar-credits {
+    width: 100%;
+    justify-content: center;
   }
 
   .navbar-login-btn,

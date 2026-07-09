@@ -26,6 +26,7 @@ import Dmca from './pages/Dmca';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Account from './pages/Account';
+import Pricing from './pages/Pricing';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route
           path="/account"
           element={

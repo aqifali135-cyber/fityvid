@@ -32,24 +32,63 @@ export function getPool() {
   return pool;
 }
 
+async function columnExists(tableName, columnName) {
+  const db = getPool();
+  const [rows] = await db.execute(
+    `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+    [process.env.DB_NAME.trim(), tableName, columnName],
+  );
+  return rows.length > 0;
+}
+
 export async function ensureUsersTable() {
+  const db = getPool();
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS users (
+      id VARCHAR(64) PRIMARY KEY,
+      name VARCHAR(150) NOT NULL,
+      email VARCHAR(255) NOT NULL UNIQUE,
+      password_hash VARCHAR(255) NOT NULL,
+      hashtag_free_search_used TINYINT(1) DEFAULT 0,
+      credit_balance INT NOT NULL DEFAULT 60,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `);
+
+  if (!(await columnExists('users', 'credit_balance'))) {
+    await db.execute(
+      'ALTER TABLE users ADD COLUMN credit_balance INT NOT NULL DEFAULT 60',
+    );
+  }
+}
+
+export async function ensureCreditTransactionsTable() {
+  const db = getPool();
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS credit_transactions (
+      id VARCHAR(64) PRIMARY KEY,
+      user_id VARCHAR(64) NOT NULL,
+      type VARCHAR(50) NOT NULL,
+      tool VARCHAR(100) NULL,
+      amount INT NOT NULL,
+      balance_after INT NOT NULL,
+      description VARCHAR(255) NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_credit_transactions_user_id (user_id),
+      INDEX idx_credit_transactions_created_at (created_at)
+    )
+  `);
+}
+
+export async function ensureSchema() {
   if (!schemaReady) {
     schemaReady = (async () => {
-      const db = getPool();
-      await db.execute(`
-        CREATE TABLE IF NOT EXISTS users (
-          id VARCHAR(64) PRIMARY KEY,
-          name VARCHAR(150) NOT NULL,
-          email VARCHAR(255) NOT NULL UNIQUE,
-          password_hash VARCHAR(255) NOT NULL,
-          hashtag_free_search_used TINYINT(1) DEFAULT 0,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )
-      `);
+      await ensureUsersTable();
+      await ensureCreditTransactionsTable();
     })();
   }
-
   return schemaReady;
 }
 
@@ -62,7 +101,7 @@ export async function initDatabase() {
   }
 
   try {
-    await ensureUsersTable();
+    await ensureSchema();
     const connection = await getPool().getConnection();
     try {
       await connection.ping();

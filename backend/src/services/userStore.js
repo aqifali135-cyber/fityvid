@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
-import { ensureUsersTable, getPool } from './db.js';
+import { SIGNUP_BONUS_CREDITS } from './creditStore.js';
+import { ensureSchema, getPool } from './db.js';
 
 function rowToUser(row) {
   if (!row) return null;
@@ -10,6 +11,7 @@ function rowToUser(row) {
     email: row.email,
     passwordHash: row.password_hash,
     hashtagFreeSearchUsed: Boolean(row.hashtag_free_search_used),
+    creditBalance: Number(row.credit_balance ?? 0),
     createdAt: row.created_at,
   };
 }
@@ -27,12 +29,13 @@ export function sanitizeUser(user) {
     id: user.id,
     name: user.name,
     email: user.email,
-    createdAt: formatCreatedAt(user.createdAt),
+    creditBalance: Number(user.creditBalance ?? user.credit_balance ?? 0),
+    createdAt: formatCreatedAt(user.createdAt ?? user.created_at),
   };
 }
 
 export async function findUserByEmail(email) {
-  await ensureUsersTable();
+  await ensureSchema();
   const normalized = String(email || '').trim().toLowerCase();
   const [rows] = await getPool().execute(
     'SELECT * FROM users WHERE email = ? LIMIT 1',
@@ -42,42 +45,50 @@ export async function findUserByEmail(email) {
 }
 
 export async function findUserById(id) {
-  await ensureUsersTable();
+  await ensureSchema();
   const [rows] = await getPool().execute('SELECT * FROM users WHERE id = ? LIMIT 1', [id]);
   return rowToUser(rows[0]) || null;
 }
 
 export async function createUser({ name, email, passwordHash }) {
-  await ensureUsersTable();
+  await ensureSchema();
 
   const normalizedEmail = String(email).trim().toLowerCase();
   const userName = String(name).trim();
   const id = randomUUID();
+  const signupBonus = SIGNUP_BONUS_CREDITS;
 
+  const connection = await getPool().getConnection();
   try {
-    await getPool().execute(
-      'INSERT INTO users (id, name, email, password_hash) VALUES (?, ?, ?, ?)',
-      [id, userName, normalizedEmail, passwordHash],
+    await connection.beginTransaction();
+    await connection.execute(
+      'INSERT INTO users (id, name, email, password_hash, credit_balance) VALUES (?, ?, ?, ?, ?)',
+      [id, userName, normalizedEmail, passwordHash, signupBonus],
     );
+    await connection.execute(
+      `INSERT INTO credit_transactions (id, user_id, type, tool, amount, balance_after, description)
+       VALUES (?, ?, 'signup_bonus', NULL, ?, ?, ?)`,
+      [randomUUID(), id, signupBonus, signupBonus, 'Signup bonus credits'],
+    );
+    await connection.commit();
   } catch (error) {
+    await connection.rollback();
     if (error.code === 'ER_DUP_ENTRY') {
       const duplicate = new Error('An account with this email already exists.');
       duplicate.code = 'EMAIL_EXISTS';
       throw duplicate;
     }
     throw error;
+  } finally {
+    connection.release();
   }
 
-  return sanitizeUser({
-    id,
-    name: userName,
-    email: normalizedEmail,
-    createdAt: new Date().toISOString(),
-  });
+  const user = await findUserById(id);
+  return sanitizeUser(user);
 }
 
 export async function updateUser(id, patch) {
-  await ensureUsersTable();
+  await ensureSchema();
 
   const fields = [];
   const values = [];
@@ -98,9 +109,14 @@ export async function updateUser(id, patch) {
     fields.push('hashtag_free_search_used = ?');
     values.push(patch.hashtagFreeSearchUsed ? 1 : 0);
   }
+  if (patch.creditBalance !== undefined) {
+    fields.push('credit_balance = ?');
+    values.push(Number(patch.creditBalance));
+  }
 
   if (fields.length === 0) {
-    return findUserById(id).then(sanitizeUser);
+    const user = await findUserById(id);
+    return sanitizeUser(user);
   }
 
   values.push(id);

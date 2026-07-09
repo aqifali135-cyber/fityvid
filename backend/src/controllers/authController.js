@@ -3,6 +3,7 @@ import { requireAuth, signAuthToken } from '../middleware/auth.js';
 import {
   createUser,
   findUserByEmail,
+  findUserById,
   sanitizeUser,
 } from '../services/userStore.js';
 
@@ -94,7 +95,7 @@ export async function login(req, res) {
       });
     }
 
-    const safeUser = sanitizeUser(user);
+    const safeUser = sanitizeUser(await findUserById(user.id));
     const token = signAuthToken(safeUser);
 
     return res.json({
@@ -111,11 +112,19 @@ export async function login(req, res) {
   }
 }
 
-export function me(req, res) {
-  return res.json({
-    success: true,
-    user: req.user,
-  });
+export async function me(req, res) {
+  try {
+    const user = await findUserById(req.user.id);
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Account not found. Please log in again.' });
+    }
+    return res.json({
+      success: true,
+      user: sanitizeUser(user),
+    });
+  } catch {
+    return res.status(500).json({ success: false, message: 'Unable to load account.' });
+  }
 }
 
 export function logout(_req, res) {

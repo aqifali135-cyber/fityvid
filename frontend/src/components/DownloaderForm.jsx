@@ -1,5 +1,8 @@
 import { useState, useMemo } from 'react';
 import { fetchVideoInfo } from '../api/client';
+import { useAuth } from '../context/AuthContext';
+import { CREDIT_COST, CREDIT_SPENT_MESSAGE } from '../constants/credits';
+import CreditNotice from './CreditNotice';
 import { PLATFORM_ICONS } from '../constants/platforms';
 import { detectPlatform, PLATFORM_NAMES } from '../utils/detectPlatform';
 import VideoResult from './VideoResult';
@@ -66,11 +69,14 @@ function PlatformIcon({ platform }) {
 
 export default function DownloaderForm({ defaultPlatform = null, variant = 'default' }) {
   const isHero = variant === 'hero';
+  const { isAuthenticated, user, spendCredits } = useAuth();
   const [url, setUrl] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState(defaultPlatform);
   const [manualPlatform, setManualPlatform] = useState(Boolean(defaultPlatform));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [creditNotice, setCreditNotice] = useState(null);
+  const [creditSuccess, setCreditSuccess] = useState('');
   const [result, setResult] = useState(null);
 
   const detectedFromUrl = useMemo(() => detectPlatform(url), [url]);
@@ -112,6 +118,8 @@ export default function DownloaderForm({ defaultPlatform = null, variant = 'defa
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+    setCreditNotice(null);
+    setCreditSuccess('');
     setResult(null);
 
     if (!url.trim()) {
@@ -122,6 +130,16 @@ export default function DownloaderForm({ defaultPlatform = null, variant = 'defa
     const platform = detectPlatform(url) || selectedPlatform;
     if (!platform) {
       setError(INVALID_LINK_MSG);
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setCreditNotice('login');
+      return;
+    }
+
+    if ((user?.creditBalance ?? 0) < CREDIT_COST) {
+      setCreditNotice('insufficient');
       return;
     }
 
@@ -139,9 +157,15 @@ export default function DownloaderForm({ defaultPlatform = null, variant = 'defa
         return;
       }
 
+      await spendCredits('video_downloader', 'Video download search');
+      setCreditSuccess(CREDIT_SPENT_MESSAGE);
       setResult(data);
-    } catch {
-      setError(FETCH_ERROR);
+    } catch (err) {
+      if (err.data?.code === 'INSUFFICIENT_CREDITS') {
+        setCreditNotice('insufficient');
+      } else {
+        setError(FETCH_ERROR);
+      }
     } finally {
       setLoading(false);
     }
@@ -278,6 +302,8 @@ export default function DownloaderForm({ defaultPlatform = null, variant = 'defa
         </div>
       </div>
       {error && <p className="error-text">{error}</p>}
+      <CreditNotice type={creditNotice} />
+      <CreditNotice type={creditSuccess ? 'success' : null} message={creditSuccess} />
       {loading && (
         <p className="loading-text" role="status">
           Fetching video information…

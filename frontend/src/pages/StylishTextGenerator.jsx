@@ -4,6 +4,9 @@ import ToolsCategoryMenu from '../components/ToolsCategoryMenu';
 import AIWriterPanel from '../components/AIWriterPanel';
 import ImageToolsPanel from '../components/ImageToolsPanel';
 import DesignToolsPanel from '../components/DesignToolsPanel';
+import CreditNotice from '../components/CreditNotice';
+import { useAuth } from '../context/AuthContext';
+import { CREDIT_COST, CREDIT_SPENT_MESSAGE } from '../constants/credits';
 import { PAGE_SEO } from '../constants/seo';
 import { getDesignTool } from '../utils/designTools';
 import {
@@ -43,7 +46,9 @@ const FAQ_ITEMS = [
 
 export default function StylishTextGenerator() {
   const seo = PAGE_SEO.stylishTextGenerator;
-  const [input, setInput] = useState('');
+  const { isAuthenticated, user, spendCredits } = useAuth();
+  const [draftInput, setDraftInput] = useState('');
+  const [generatedInput, setGeneratedInput] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [copiedId, setCopiedId] = useState('');
   const [panel, setPanel] = useState('fonts');
@@ -55,8 +60,15 @@ export default function StylishTextGenerator() {
   const [aiWriterToolId, setAiWriterToolId] = useState('');
   const [imageToolId, setImageToolId] = useState('');
   const [designToolId, setDesignToolId] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [creditNotice, setCreditNotice] = useState(null);
+  const [creditSuccess, setCreditSuccess] = useState('');
+  const [generateError, setGenerateError] = useState('');
 
-  const variants = useMemo(() => generateStylishTextVariants(input), [input]);
+  const variants = useMemo(
+    () => (generatedInput ? generateStylishTextVariants(generatedInput) : []),
+    [generatedInput],
+  );
   const filteredVariants = useMemo(
     () => filterStylishTextVariants(variants, activeFilter),
     [variants, activeFilter],
@@ -96,8 +108,54 @@ export default function StylishTextGenerator() {
   }
 
   function handleClear() {
-    setInput('');
+    setDraftInput('');
+    setGeneratedInput('');
     setCopiedId('');
+    setCreditNotice(null);
+    setCreditSuccess('');
+    setGenerateError('');
+  }
+
+  async function handleGenerate() {
+    setGenerateError('');
+    setCreditNotice(null);
+    setCreditSuccess('');
+
+    if (!draftInput.trim()) {
+      setGenerateError('Please enter some text to generate.');
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setCreditNotice('login');
+      return;
+    }
+
+    if ((user?.creditBalance ?? 0) < CREDIT_COST) {
+      setCreditNotice('insufficient');
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      await spendCredits('stylish_text', 'Generated stylish text');
+      setGeneratedInput(draftInput.trim());
+      setCreditSuccess(CREDIT_SPENT_MESSAGE);
+      requestAnimationFrame(() => {
+        document.getElementById('stylish-text-results-anchor')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      });
+    } catch (err) {
+      if (err.data?.code === 'INSUFFICIENT_CREDITS') {
+        setCreditNotice('insufficient');
+      } else {
+        setGenerateError(err.message || 'Unable to generate stylish text.');
+      }
+    } finally {
+      setGenerating(false);
+    }
   }
 
   function handleTextAction(action) {
@@ -239,12 +297,12 @@ export default function StylishTextGenerator() {
                 type="text"
                 className="stylish-text-input"
                 placeholder="Type your text here..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+                value={draftInput}
+                onChange={(e) => setDraftInput(e.target.value)}
                 spellCheck={false}
                 autoComplete="off"
               />
-              {input && (
+              {draftInput && (
                 <button
                   type="button"
                   className="stylish-text-input__clear"
@@ -263,6 +321,20 @@ export default function StylishTextGenerator() {
                 </button>
               )}
             </div>
+            <div className="stylish-text-generate-row">
+              <button
+                type="button"
+                className="btn btn-primary stylish-text-generate-btn"
+                onClick={handleGenerate}
+                disabled={generating}
+              >
+                {generating ? 'Generating…' : 'Generate Stylish Text'}
+              </button>
+              <p className="stylish-text-generate-note">Each generation costs 20 credits.</p>
+            </div>
+            {generateError && <p className="stylish-text-generate-error">{generateError}</p>}
+            <CreditNotice type={creditNotice} />
+            <CreditNotice type={creditSuccess ? 'success' : null} message={creditSuccess} />
           </div>
         </section>
 
@@ -287,7 +359,7 @@ export default function StylishTextGenerator() {
           />
         )}
 
-        {panel === 'fonts' && (
+        {panel === 'fonts' && generatedInput && (
           <section id="stylish-text-results-anchor" className="stylish-text-workspace">
             <div className="container stylish-text-workspace__grid">
               <aside className="stylish-text-sidebar" aria-label="Font style filters">

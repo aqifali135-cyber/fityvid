@@ -1,10 +1,9 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { generateAllPlatformHashtags } from '../utils/platformHashtagGenerator';
+import { useAuth } from '../context/AuthContext';
+import { CREDIT_COST, CREDIT_SPENT_MESSAGE } from '../constants/credits';
+import CreditNotice from './CreditNotice';
 import HashtagResult from './HashtagResult';
-import HashtagSubscriptionGate, {
-  isHashtagFreeSearchUsed,
-  markHashtagFreeSearchUsed,
-} from './HashtagSubscriptionGate';
 import './HashtagForm.css';
 
 const MODES = [
@@ -120,6 +119,7 @@ function cleanFileName(name) {
 }
 
 const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
+  const { isAuthenticated, user, spendCredits } = useAuth();
   const [mode, setMode] = useState('keyword');
   const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
   const [topic, setTopic] = useState('');
@@ -129,9 +129,10 @@ const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
   const [photoDescription, setPhotoDescription] = useState('');
   const [platform, setPlatform] = useState(DEFAULT_PLATFORM);
   const [error, setError] = useState('');
+  const [creditNotice, setCreditNotice] = useState(null);
+  const [creditSuccess, setCreditSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [showSubscriptionGate, setShowSubscriptionGate] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -156,26 +157,25 @@ const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
 
   async function runGeneration(generationTopic) {
     setError('');
+    setCreditNotice(null);
+    setCreditSuccess('');
 
-    if (isHashtagFreeSearchUsed()) {
-      setShowSubscriptionGate(true);
-      setTimeout(() => {
-        document.getElementById('hashtag-subscription-gate')?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        });
-      }, 100);
+    if (!isAuthenticated) {
+      setCreditNotice('login');
       return;
     }
 
-    setResult(null);
-    setShowSubscriptionGate(false);
+    if ((user?.creditBalance ?? 0) < CREDIT_COST) {
+      setCreditNotice('insufficient');
+      return;
+    }
 
     if (!generationTopic.trim()) {
       setError('Please enter a topic or description.');
       return;
     }
 
+    setResult(null);
     setLoading(true);
     try {
       const data = await generateAllPlatformHashtags({
@@ -190,13 +190,19 @@ const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
         setError('Unable to generate hashtags. Please try again.');
         return;
       }
-      markHashtagFreeSearchUsed();
+
+      await spendCredits('hashtag_generator', 'Hashtag search');
+      setCreditSuccess(CREDIT_SPENT_MESSAGE);
       setResult(data);
       setTimeout(() => {
         document.getElementById('hashtag-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
-    } catch {
-      setError('Unable to generate hashtags. Please try again.');
+    } catch (err) {
+      if (err.data?.code === 'INSUFFICIENT_CREDITS') {
+        setCreditNotice('insufficient');
+      } else {
+        setError('Unable to generate hashtags. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -399,12 +405,12 @@ const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
           )}
 
           {error && <p className="error-text">{error}</p>}
+          <CreditNotice type={creditNotice} />
+          <CreditNotice type={creditSuccess ? 'success' : null} message={creditSuccess} />
         </form>
       </div>
 
-      {showSubscriptionGate && <HashtagSubscriptionGate />}
-
-      {result && !showSubscriptionGate && (
+      {result && (
         <div id="hashtag-results">
           <HashtagResult data={result} onGenerateAgain={handleGenerateAgain} />
         </div>

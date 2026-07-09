@@ -1,0 +1,49 @@
+.credit-notice {
+  margin: 1rem 0 0;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.credit-notice p {
+  margin: 0;
+}
+
+.credit-notice__actions {
+  margin-top: 0.55rem !important;
+  font-weight: 600;
+}
+
+.credit-notice__actions a {
+  color: #6d28d9;
+  text-decoration: none;
+}
+
+.credit-notice__actions a:hover {
+  text-decoration: underline;
+}
+
+.credit-notice--info {
+  background: rgba(219, 234, 254, 0.9);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  color: #1e3a8a;
+}
+
+.credit-notice--warning {
+  background: rgba(254, 243, 199, 0.95);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  color: #92400e;
+}
+
+.credit-notice--success {
+  background: rgba(209, 250, 229, 0.95);
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  color: #065f46;
+}
+
+.credit-notice--error {
+  background: rgba(254, 226, 226, 0.95);
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  color: #b91c1c;
+}

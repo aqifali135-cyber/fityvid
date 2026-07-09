@@ -5,6 +5,10 @@ import {
   logoutUser,
   signupUser,
 } from '../api/auth';
+import {
+  fetchCreditBalance,
+  spendCredits as spendCreditsApi,
+} from '../api/credits';
 import { getStoredToken, storeAuthToken } from '../utils/authToken';
 
 const AuthContext = createContext(null);
@@ -34,6 +38,20 @@ export function AuthProvider({ children }) {
       return null;
     }
   }, []);
+
+  const refreshCredits = useCallback(async () => {
+    if (!getStoredToken()) return null;
+    try {
+      const data = await fetchCreditBalance();
+      if (data?.success) {
+        setUser((prev) => (prev ? { ...prev, creditBalance: data.creditBalance } : prev));
+        return data.creditBalance;
+      }
+    } catch {
+      // ignore refresh failures
+    }
+    return user?.creditBalance ?? null;
+  }, [user?.creditBalance]);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,6 +93,14 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const spendCredits = useCallback(async (tool, description, amount = 20) => {
+    const data = await spendCreditsApi({ tool, amount, description });
+    setUser((prev) =>
+      prev ? { ...prev, creditBalance: data.creditBalance } : prev,
+    );
+    return data;
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -84,8 +110,10 @@ export function AuthProvider({ children }) {
       login,
       logout,
       refreshUser,
+      refreshCredits,
+      spendCredits,
     }),
-    [user, loading, signup, login, logout, refreshUser],
+    [user, loading, signup, login, logout, refreshUser, refreshCredits, spendCredits],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

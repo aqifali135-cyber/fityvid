@@ -10,6 +10,7 @@ const links = [
   { to: '/platforms', label: 'Platforms' },
   { to: '/hashtag-generator', label: 'Hashtag Generator' },
   { to: '/stylish-text-generator', label: 'Stylish Text' },
+  { to: '/pricing', label: 'Pricing' },
   { to: '/download-guide', label: 'Download Guide' },
   { to: '/faq', label: 'FAQ' },
   { to: '/contact', label: 'Contact' },
@@ -83,6 +84,9 @@ export default function Navbar() {
                 </span>
               ) : isAuthenticated ? (
                 <>
+                  <span className="navbar-credits" aria-label={`Credits: ${user?.creditBalance ?? 0}`}>
+                    Credits: {user?.creditBalance ?? 0}
+                  </span>
                   <button
                     type="button"
                     className="navbar-user-btn"
