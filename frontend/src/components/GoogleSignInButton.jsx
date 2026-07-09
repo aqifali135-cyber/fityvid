@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { getGoogleClientId, initGoogleSignIn, isGoogleAuthConfigured } from '../utils/googleAuth';
 
 function GoogleIcon() {
@@ -24,23 +24,40 @@ function GoogleIcon() {
   );
 }
 
+function measureButtonWidth(element) {
+  if (!element) return 360;
+  const width = element.getBoundingClientRect().width;
+  return Math.max(Math.floor(width), 240);
+}
+
 export default function GoogleSignInButton({ onCredential, disabled = false }) {
   const overlayRef = useRef(null);
   const wrapperRef = useRef(null);
+  const onCredentialRef = useRef(onCredential);
   const [ready, setReady] = useState(false);
+  const [initializing, setInitializing] = useState(false);
   const [loadError, setLoadError] = useState('');
   const configured = isGoogleAuthConfigured();
 
-  useEffect(() => {
-    if (!configured || disabled) return undefined;
+  onCredentialRef.current = onCredential;
+
+  useLayoutEffect(() => {
+    if (!configured || disabled) {
+      setReady(false);
+      return undefined;
+    }
 
     let cancelled = false;
+    setInitializing(true);
+    setLoadError('');
 
-    (async () => {
+    async function mountGoogleButton() {
       try {
+        const width = measureButtonWidth(wrapperRef.current);
         await initGoogleSignIn({
-          onCredential,
+          onCredential: (response) => onCredentialRef.current?.(response),
           buttonRef: overlayRef,
+          width,
         });
         if (!cancelled) {
           setReady(true);
@@ -48,36 +65,73 @@ export default function GoogleSignInButton({ onCredential, disabled = false }) {
         }
       } catch (err) {
         if (!cancelled) {
+          setReady(false);
           setLoadError(err.message || 'Google sign-in is unavailable.');
         }
+      } finally {
+        if (!cancelled) {
+          setInitializing(false);
+        }
       }
-    })();
+    }
+
+    mountGoogleButton();
 
     return () => {
       cancelled = true;
     };
-  }, [configured, disabled, onCredential]);
+  }, [configured, disabled]);
 
-  if (!configured) {
-    return null;
-  }
+  useEffect(() => {
+    if (!configured || disabled || !ready) return undefined;
+
+    function handleResize() {
+      const width = measureButtonWidth(wrapperRef.current);
+      if (overlayRef.current && window.google?.accounts?.id) {
+        overlayRef.current.innerHTML = '';
+        window.google.accounts.id.renderButton(overlayRef.current, {
+          type: 'standard',
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'pill',
+          width,
+          logo_alignment: 'left',
+        });
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [configured, disabled, ready]);
+
+  const inactive = disabled || initializing || !configured || !ready;
 
   return (
-    <div className="google-signin">
-      <div
-        ref={wrapperRef}
-        className={`google-btn${disabled ? ' google-btn--disabled' : ''}`}
-        aria-hidden={!ready}
-      >
-        <GoogleIcon />
-        <span>Continue with Google</span>
+    <div className={`google-signin${inactive ? ' google-signin--inactive' : ''}`}>
+      <div ref={wrapperRef} className="google-signin__surface">
+        <div
+          className={`google-btn${disabled ? ' google-btn--disabled' : ''}${
+            initializing ? ' google-btn--loading' : ''
+          }`}
+        >
+          <GoogleIcon />
+          <span>{initializing ? 'Loading Google sign-in…' : 'Continue with Google'}</span>
+        </div>
+        {configured && (
+          <div
+            ref={overlayRef}
+            className={`google-btn-overlay${inactive ? ' google-btn-overlay--hidden' : ''}`}
+            aria-label="Continue with Google"
+            title="Continue with Google"
+          />
+        )}
       </div>
-      <div
-        ref={overlayRef}
-        className={`google-btn-overlay${ready && !disabled ? '' : ' google-btn-overlay--hidden'}`}
-        aria-label="Continue with Google"
-        title={getGoogleClientId() ? 'Continue with Google' : undefined}
-      />
+      {!configured && (
+        <p className="google-signin__hint" role="status">
+          Google sign-in requires <code>VITE_GOOGLE_CLIENT_ID</code> in your frontend environment.
+        </p>
+      )}
       {loadError && (
         <p className="auth-alert auth-alert--error google-signin__error" role="alert">
           {loadError}

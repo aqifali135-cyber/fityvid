@@ -3,14 +3,21 @@ export const STYLE_FILTERS = [
   'Cool',
   'Fancy',
   'Cursive',
-  'Small',
   'Bold',
-  'Glitch',
-  'Symbol Text',
-  'Text Art',
-  'Emoji',
-  'Aesthetic',
-  'Letter Cases',
+  'Bubble',
+  'Small',
+  'Unique',
+];
+
+export const FONT_STYLE_CATEGORIES = [
+  { id: 'All', label: 'All Fonts', icon: '✨', filter: 'All' },
+  { id: 'Cool', label: 'Cool Fonts', icon: '😎', filter: 'Cool' },
+  { id: 'Cursive', label: 'Cursive Fonts', icon: '✍️', filter: 'Cursive' },
+  { id: 'Bold', label: 'Bold Fonts', icon: '𝐁', filter: 'Bold' },
+  { id: 'Fancy', label: 'Fancy Fonts', icon: '💎', filter: 'Fancy' },
+  { id: 'Bubble', label: 'Bubble Fonts', icon: '⭕', filter: 'Bubble' },
+  { id: 'Small', label: 'Small Fonts', icon: 'ᵃ', filter: 'Small' },
+  { id: 'Unique', label: 'Unique Fonts', icon: '🌟', filter: 'Unique' },
 ];
 
 export const PREVIEW_TEXT = 'FityVid';
@@ -394,5 +401,21 @@ export function generateStylishTextVariants(text) {
 
 export function filterStylishTextVariants(variants, filter) {
   if (!filter || filter === 'All') return variants;
+  if (filter === 'Bubble') {
+    return variants.filter(
+      (variant) =>
+        variant.category === 'Text Art' ||
+        variant.id === 'bubble' ||
+        variant.id === 'dark-bubble',
+    );
+  }
+  if (filter === 'Unique') {
+    const uniqueCategories = new Set(['Aesthetic', 'Glitch', 'Emoji', 'Symbol Text', 'Letter Cases']);
+    return variants.filter((variant) => uniqueCategories.has(variant.category));
+  }
   return variants.filter((variant) => variant.category === filter);
+}
+
+export function countVariantsByFilter(variants, filter) {
+  return filterStylishTextVariants(variants, filter).length;
 }

@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import JsonLd from '../components/JsonLd';
-import Logo from '../components/Logo';
 import HashtagForm from '../components/HashtagForm';
 import HashtagCategoryGrid from '../components/HashtagCategoryGrid';
 import HashtagFloatingBg from '../components/HashtagFloatingBg';
@@ -37,14 +36,16 @@ export default function HashtagGenerator() {
         <HashtagFloatingBg />
         <div className="hashtag-content">
           <header className="hashtag-page-hero">
-            <div className="container">
-              <div className="hashtag-page-hero__brand">
-                <Logo size="hero" showText />
-              </div>
-              <h1 className="hashtag-page-hero__title">Free Hashtag Generator</h1>
+            <div className="container hashtag-page-hero__inner">
+              <p className="hashtag-page-hero__badge">
+                <span aria-hidden="true">✨</span> 100% Free • No Sign Up Required
+              </p>
+              <h1 className="hashtag-page-hero__title">
+                Free <span className="hashtag-page-hero__gradient">Hashtag</span> Generator
+              </h1>
               <p className="hashtag-page-hero__subtitle">
-                Generate hashtags for YouTube, TikTok, Instagram, and Facebook posts, reels, Shorts,
-                and videos.
+                Generate powerful, relevant hashtags for YouTube, TikTok, Instagram, Facebook posts,
+                reels, Shorts, and videos in seconds.
               </p>
             </div>
           </header>

@@ -40,13 +40,73 @@ const DEFAULT_TYPE = 'mixed';
 const DEFAULT_COUNT = 30;
 const DEFAULT_LANGUAGE = 'en';
 
+const FEATURES = [
+  {
+    id: 'relevant',
+    title: 'Relevant Hashtags',
+    description: 'Get highly relevant and trending hashtags.',
+    color: 'purple',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M4 9h16M4 15h10" strokeLinecap="round" />
+        <path d="M10 5v14" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    id: 'engagement',
+    title: 'Boost Engagement',
+    description: 'Increase reach, views, and engagement.',
+    color: 'blue',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M4 17l6-6 4 4 6-8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M14 7h6v6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    id: 'time',
+    title: 'Save Time',
+    description: 'Generate hashtags in seconds, not minutes.',
+    color: 'pink',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M13 2L4 14h7l-1 8 10-14h-7l0-6z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    id: 'free',
+    title: '100% Free',
+    description: 'No sign up required. Unlimited usage.',
+    color: 'green',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M12 3l7 4v5c0 5-3.5 8.5-7 9-3.5-.5-7-4-7-9V7l7-4z" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+];
+
+function SearchIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20l-3.5-3.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function ModeIcon({ mode }) {
   const props = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, 'aria-hidden': true };
 
   if (mode === 'keyword') {
     return (
       <svg {...props}>
-        <path d="M4 7h16M4 12h10M4 17h14" strokeLinecap="round" />
+        <circle cx="11" cy="11" r="7" />
+        <path d="M20 20l-3.5-3.5" strokeLinecap="round" />
       </svg>
     );
   }
@@ -304,22 +364,27 @@ const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
         </div>
 
         <form className="hashtag-form" onSubmit={handleSubmit}>
-          <div className="hashtag-form-bar">
+          <div className="hashtag-input-stack">
             {mode === 'keyword' && (
-              <input
-                id="topic"
-                type="text"
-                className="input hashtag-form-bar__input"
-                placeholder="Example: Paris, France, Girl in Paris, Travelling with Dog"
-                value={topic}
-                onChange={handleTopicChange}
-                maxLength={80}
-              />
+              <div className="hashtag-search-field">
+                <span className="hashtag-search-field__icon" aria-hidden="true">
+                  <SearchIcon />
+                </span>
+                <input
+                  id="topic"
+                  type="text"
+                  className="hashtag-search-field__input"
+                  placeholder="Example: fitness, workout, home gym, motivation..."
+                  value={topic}
+                  onChange={handleTopicChange}
+                  maxLength={80}
+                />
+              </div>
             )}
 
             {mode === 'photo' && (
-              <div className="hashtag-photo-bar">
-                <label className="hashtag-photo-upload">
+              <div className="hashtag-photo-stack">
+                <label className="hashtag-photo-upload hashtag-photo-upload--premium">
                   <input
                     type="file"
                     accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
@@ -328,35 +393,45 @@ const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
                   />
                   <span className="hashtag-photo-upload__btn">Upload Photo</span>
                 </label>
-                <input
-                  type="text"
-                  className="input hashtag-form-bar__input"
-                  placeholder="Describe your photo, e.g. beach sunset, gym workout, food plate"
-                  value={photoDescription}
-                  onChange={(e) => {
-                    setPhotoDescription(e.target.value);
-                    setError('');
-                  }}
-                  maxLength={120}
-                />
+                <div className="hashtag-search-field">
+                  <span className="hashtag-search-field__icon" aria-hidden="true">
+                    <ModeIcon mode="photo" />
+                  </span>
+                  <input
+                    type="text"
+                    className="hashtag-search-field__input"
+                    placeholder="Describe your photo, e.g. beach sunset, gym workout, food plate"
+                    value={photoDescription}
+                    onChange={(e) => {
+                      setPhotoDescription(e.target.value);
+                      setError('');
+                    }}
+                    maxLength={120}
+                  />
+                </div>
               </div>
             )}
 
             {mode === 'url' && (
               <>
-                <input
-                  id="post-url"
-                  type="url"
-                  className="input hashtag-form-bar__input"
-                  placeholder="https://www.instagram.com/p/example/"
-                  value={postUrl}
-                  onChange={handleUrlChange}
-                  inputMode="url"
-                />
-                <label className="hashtag-language-field">
-                  <span className="sr-only">Language</span>
+                <div className="hashtag-search-field">
+                  <span className="hashtag-search-field__icon" aria-hidden="true">
+                    <ModeIcon mode="url" />
+                  </span>
+                  <input
+                    id="post-url"
+                    type="url"
+                    className="hashtag-search-field__input"
+                    placeholder="https://www.instagram.com/p/example/"
+                    value={postUrl}
+                    onChange={handleUrlChange}
+                    inputMode="url"
+                  />
+                </div>
+                <label className="hashtag-language-field hashtag-language-field--block">
+                  <span className="hashtag-language-field__label">Language</span>
                   <select
-                    className="input hashtag-language-select"
+                    className="input hashtag-language-select hashtag-language-select--block"
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
                   >
@@ -369,14 +444,16 @@ const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
                 </label>
               </>
             )}
+          </div>
 
-            <button type="submit" className="hashtag-generate-btn" disabled={loading}>
-              <span>{loading ? 'Generating...' : 'Generate Hashtags'}</span>
+          <button type="submit" className="hashtag-generate-btn hashtag-generate-btn--hero" disabled={loading}>
+            <span>{loading ? 'Generating...' : '✨ Generate Hashtags'}</span>
+            {!loading && (
               <span className="hashtag-generate-btn__arrow" aria-hidden="true">
                 →
               </span>
-            </button>
-          </div>
+            )}
+          </button>
 
           {mode === 'photo' && (
             <div className="hashtag-photo-meta">
@@ -408,6 +485,21 @@ const HashtagForm = forwardRef(function HashtagForm({ onTopicChange }, ref) {
           <CreditNotice type={creditNotice} />
           <CreditNotice type={creditSuccess ? 'success' : null} message={creditSuccess} />
         </form>
+      </div>
+
+      <div className="hashtag-features-row" aria-label="Hashtag generator features">
+        {FEATURES.map((feature, index) => (
+          <div key={feature.id} className="hashtag-feature-item">
+            {index > 0 && <span className="hashtag-feature-divider" aria-hidden="true" />}
+            <div className={`hashtag-feature-icon hashtag-feature-icon--${feature.color}`}>
+              {feature.icon}
+            </div>
+            <div className="hashtag-feature-copy">
+              <h3 className="hashtag-feature-title">{feature.title}</h3>
+              <p className="hashtag-feature-desc">{feature.description}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
       {result && (

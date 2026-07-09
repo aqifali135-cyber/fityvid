@@ -42,7 +42,7 @@ export function loadGoogleIdentityScript() {
   return scriptPromise;
 }
 
-export async function initGoogleSignIn({ onCredential, buttonRef }) {
+export async function initGoogleSignIn({ onCredential, buttonRef, width = 360 }) {
   const clientId = getGoogleClientId();
   if (!clientId) {
     throw new Error('Google sign-in is not configured.');
@@ -69,7 +69,7 @@ export async function initGoogleSignIn({ onCredential, buttonRef }) {
       size: 'large',
       text: 'continue_with',
       shape: 'pill',
-      width: buttonRef.current.offsetWidth || 360,
+      width: width || buttonRef.current.offsetWidth || 360,
       logo_alignment: 'left',
     });
   }

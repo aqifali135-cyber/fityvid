@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import SEO from '../components/SEO';
 import ToolsCategoryMenu from '../components/ToolsCategoryMenu';
 import AIWriterPanel from '../components/AIWriterPanel';
@@ -10,7 +10,8 @@ import { CREDIT_COST, CREDIT_SPENT_MESSAGE } from '../constants/credits';
 import { PAGE_SEO } from '../constants/seo';
 import { getDesignTool } from '../utils/designTools';
 import {
-  STYLE_FILTERS,
+  FONT_STYLE_CATEGORIES,
+  countVariantsByFilter,
   filterStylishTextVariants,
   generateStylishTextVariants,
 } from '../utils/stylishTextGenerator';
@@ -44,6 +45,54 @@ const FAQ_ITEMS = [
   },
 ];
 
+const MAX_INPUT_LENGTH = 200;
+const PAGE_SIZE = 10;
+
+function CopyIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+      <rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M6 16V6a2 2 0 0 1 2-2h10"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function WandIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path
+        d="M4 20l9-9m3 3 5-5a2.8 2.8 0 0 0-4-4l-5 5m3 3L7 21"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M15 5l1 1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function HeartIcon({ filled }) {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path
+        d="M12 20.5s-7-4.6-7-9.2a4.1 4.1 0 0 1 7.3-2.5A4.1 4.1 0 0 1 19 11.3c0 4.6-7 9.2-7 9.2z"
+        fill={filled ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export default function StylishTextGenerator() {
   const seo = PAGE_SEO.stylishTextGenerator;
   const { isAuthenticated, user, spendCredits } = useAuth();
@@ -60,19 +109,50 @@ export default function StylishTextGenerator() {
   const [aiWriterToolId, setAiWriterToolId] = useState('');
   const [imageToolId, setImageToolId] = useState('');
   const [designToolId, setDesignToolId] = useState('');
+  const [activeToolTab, setActiveToolTab] = useState('text');
   const [generating, setGenerating] = useState(false);
   const [creditNotice, setCreditNotice] = useState(null);
   const [creditSuccess, setCreditSuccess] = useState('');
   const [generateError, setGenerateError] = useState('');
+  const [sortBy, setSortBy] = useState('popular');
+  const [page, setPage] = useState(1);
+  const [favorites, setFavorites] = useState(() => new Set());
 
-  const variants = useMemo(
-    () => (generatedInput ? generateStylishTextVariants(generatedInput) : []),
-    [generatedInput],
-  );
+  const hasGenerated = Boolean(generatedInput);
+  const variants = useMemo(() => generateStylishTextVariants(draftInput), [draftInput]);
   const filteredVariants = useMemo(
     () => filterStylishTextVariants(variants, activeFilter),
     [variants, activeFilter],
   );
+  const sortedVariants = useMemo(() => {
+    const list = [...filteredVariants];
+    if (sortBy === 'name') {
+      list.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === 'favorites') {
+      list.sort((a, b) => Number(favorites.has(b.id)) - Number(favorites.has(a.id)));
+    }
+    return list;
+  }, [filteredVariants, sortBy, favorites]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedVariants.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paginatedVariants = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return sortedVariants.slice(start, start + PAGE_SIZE);
+  }, [sortedVariants, safePage]);
+
+  const activeCategory = FONT_STYLE_CATEGORIES.find((cat) => cat.filter === activeFilter);
+  const resultsTitle = activeCategory?.label || 'All Fonts';
+  const rangeStart = sortedVariants.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(safePage * PAGE_SIZE, sortedVariants.length);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeFilter, sortBy, draftInput]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
   const wordStats = useMemo(() => countWords(wordCounterText), [wordCounterText]);
 
   const activePickerCategory = panel === 'emojis' ? emojiCategory : symbolCategory;
@@ -87,6 +167,10 @@ export default function StylishTextGenerator() {
 
   async function handleCopy(id, text) {
     if (!text) return;
+    if (!hasGenerated) {
+      setGenerateError('Click Generate Stylish Text to unlock copy (20 credits).');
+      return;
+    }
     try {
       await navigator.clipboard.writeText(text);
       setCopiedId(id);
@@ -114,6 +198,29 @@ export default function StylishTextGenerator() {
     setCreditNotice(null);
     setCreditSuccess('');
     setGenerateError('');
+    setPage(1);
+  }
+
+  function handleInputChange(value) {
+    setDraftInput(value.slice(0, MAX_INPUT_LENGTH));
+  }
+
+  function toggleFavorite(id) {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function getPageNumbers() {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const pages = [1, 2, 3];
+    if (totalPages > 6) pages.push('ellipsis', totalPages);
+    return pages;
   }
 
   async function handleGenerate() {
@@ -140,6 +247,7 @@ export default function StylishTextGenerator() {
     try {
       await spendCredits('stylish_text', 'Generated stylish text');
       setGeneratedInput(draftInput.trim());
+      setGenerateError('');
       setCreditSuccess(CREDIT_SPENT_MESSAGE);
       requestAnimationFrame(() => {
         document.getElementById('stylish-text-results-anchor')?.scrollIntoView({
@@ -158,10 +266,18 @@ export default function StylishTextGenerator() {
     }
   }
 
+  function handleToolTabChange(tabId) {
+    setActiveToolTab(tabId);
+    if (tabId === 'text') {
+      setPanel('fonts');
+    }
+  }
+
   function handleTextAction(action) {
     if (!action) return;
 
     if (action.type === 'font-filter') {
+      setActiveToolTab('text');
       setPanel('fonts');
       setActiveFilter(action.filter || 'All');
       requestAnimationFrame(() => {
@@ -268,70 +384,108 @@ export default function StylishTextGenerator() {
       <SEO title={seo.title} description={seo.description} path={seo.path} />
 
       <div className="stylish-text-page">
+        <div className="stylish-text-page__blobs" aria-hidden="true">
+          <span className="stylish-text-page__blob stylish-text-page__blob--purple" />
+          <span className="stylish-text-page__blob stylish-text-page__blob--pink" />
+          <span className="stylish-text-page__blob stylish-text-page__blob--blue" />
+        </div>
+
         <header className="stylish-text-hero">
           <div className="container stylish-text-hero__inner">
+            <span className="stylish-text-hero__spark stylish-text-hero__spark--left" aria-hidden="true">
+              ✦
+            </span>
+            <span className="stylish-text-hero__spark stylish-text-hero__spark--right" aria-hidden="true">
+              ✨
+            </span>
             <h1 className="stylish-text-hero__title">Stylish Text Generator</h1>
             <p className="stylish-text-hero__subtitle">
-              Create stylish fonts for Instagram bio, captions, TikTok, Facebook, YouTube and more.
+              Convert normal text into stylish, cool and unique fonts instantly.
             </p>
             <p className="stylish-text-hero__rating" aria-label="Rated 4.8 out of 5">
               <span className="stylish-text-hero__stars" aria-hidden="true">
-                ★★★★★
+                ★
               </span>
               <span className="stylish-text-hero__score">4.8</span>
+              <span className="stylish-text-hero__rating-meta">(12.5K+ users love it)</span>
             </p>
+          </div>
+        </header>
+
+        <section className="stylish-text-tool-section">
+          <div className="container stylish-text-tool-section__inner">
             <ToolsCategoryMenu
+              variant="premium"
+              floatingDropdown
+              activeTab={activeToolTab}
+              onTabChange={handleToolTabChange}
               onTextAction={handleTextAction}
               onAiWriterSelect={handleAiWriterSelect}
               onImageToolSelect={handleImageToolSelect}
               onDesignToolSelect={handleDesignToolSelect}
             />
-          </div>
-        </header>
 
-        <section className="stylish-text-input-section">
-          <div className="container">
             <div className="stylish-text-input-wrap">
               <input
                 id="stylish-text-input"
                 type="text"
                 className="stylish-text-input"
-                placeholder="Type your text here..."
+                placeholder="Make Your Text Awesome!"
                 value={draftInput}
-                onChange={(e) => setDraftInput(e.target.value)}
+                onChange={(e) => handleInputChange(e.target.value)}
+                maxLength={MAX_INPUT_LENGTH}
                 spellCheck={false}
                 autoComplete="off"
               />
-              {draftInput && (
-                <button
-                  type="button"
-                  className="stylish-text-input__clear"
-                  onClick={handleClear}
-                  aria-label="Clear text"
-                >
-                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                    <path
-                      d="M6 6l12 12M18 6L6 18"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </button>
-              )}
+              <div className="stylish-text-input__meta">
+                <span className="stylish-text-input__counter">
+                  {draftInput.length} / {MAX_INPUT_LENGTH}
+                </span>
+                {draftInput && (
+                  <button
+                    type="button"
+                    className="stylish-text-input__clear"
+                    onClick={handleClear}
+                    aria-label="Clear text"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                      <path
+                        d="M6 6l12 12M18 6L6 18"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="stylish-text-generate-row">
+
+            <div className="stylish-text-generate-wrap">
+              <span className="stylish-text-generate-burst stylish-text-generate-burst--left" aria-hidden="true" />
+              <span className="stylish-text-generate-burst stylish-text-generate-burst--right" aria-hidden="true" />
               <button
                 type="button"
-                className="btn btn-primary stylish-text-generate-btn"
+                className="stylish-text-generate-btn"
                 onClick={handleGenerate}
                 disabled={generating}
               >
-                {generating ? 'Generating…' : 'Generate Stylish Text'}
+                <WandIcon />
+                <span>{generating ? 'Generating…' : 'Generate Stylish Text'}</span>
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                  <path
+                    d="M5 12h14M13 6l6 6-6 6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
-              <p className="stylish-text-generate-note">Each generation costs 20 credits.</p>
             </div>
+            <p className="stylish-text-generate-note">Each generation costs 20 credits.</p>
             {generateError && <p className="stylish-text-generate-error">{generateError}</p>}
             <CreditNotice type={creditNotice} />
             <CreditNotice type={creditSuccess ? 'success' : null} message={creditSuccess} />
@@ -359,58 +513,147 @@ export default function StylishTextGenerator() {
           />
         )}
 
-        {panel === 'fonts' && generatedInput && (
+        {panel === 'fonts' && (
           <section id="stylish-text-results-anchor" className="stylish-text-workspace">
             <div className="container stylish-text-workspace__grid">
               <aside className="stylish-text-sidebar" aria-label="Font style filters">
-                <h2 className="stylish-text-sidebar__title">Select a font style</h2>
+                <div className="stylish-text-sidebar__header">
+                  <span className="stylish-text-sidebar__header-icon" aria-hidden="true">
+                    ✨
+                  </span>
+                  <h2 className="stylish-text-sidebar__title">Select a font style</h2>
+                </div>
                 <div className="stylish-text-filters" role="group" aria-label="Filter font styles">
-                  {STYLE_FILTERS.map((filter) => (
-                    <button
-                      key={filter}
-                      type="button"
-                      className={`stylish-text-filter${activeFilter === filter ? ' stylish-text-filter--active' : ''}`}
-                      aria-pressed={activeFilter === filter}
-                      onClick={() => setActiveFilter(filter)}
-                    >
-                      {filter}
-                    </button>
-                  ))}
+                  {FONT_STYLE_CATEGORIES.map((category) => {
+                    const count = countVariantsByFilter(variants, category.filter);
+                    const isActive = activeFilter === category.filter;
+                    return (
+                      <button
+                        key={category.id}
+                        type="button"
+                        className={`stylish-text-filter${isActive ? ' stylish-text-filter--active' : ''}`}
+                        aria-pressed={isActive}
+                        onClick={() => setActiveFilter(category.filter)}
+                      >
+                        <span className="stylish-text-filter__icon" aria-hidden="true">
+                          {category.icon}
+                        </span>
+                        <span className="stylish-text-filter__label">{category.label}</span>
+                        <span className="stylish-text-filter__count">{count}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </aside>
 
               <div className="stylish-text-results-panel">
                 <div className="stylish-text-results-panel__head">
-                  <h2 className="stylish-text-results-panel__title">
-                    {activeFilter === 'All' ? 'All Fonts' : activeFilter}
-                  </h2>
-                  <span className="stylish-text-results-panel__count">
-                    {filteredVariants.length} styles
-                  </span>
+                  <h2 className="stylish-text-results-panel__title">{resultsTitle}</h2>
+                  <label className="stylish-text-sort">
+                    <span className="stylish-text-sort__icon" aria-hidden="true">
+                      🔥
+                    </span>
+                    <span className="stylish-text-sort__label">Sort by:</span>
+                    <select
+                      className="stylish-text-sort__select"
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      aria-label="Sort fonts"
+                    >
+                      <option value="popular">Popular</option>
+                      <option value="name">Name</option>
+                      <option value="favorites">Favorites</option>
+                    </select>
+                  </label>
                 </div>
 
+                {!hasGenerated && (
+                  <p className="stylish-text-results-panel__hint">
+                    Preview updates as you type. Click Generate Stylish Text to unlock copy (20 credits).
+                  </p>
+                )}
+
                 <div className="stylish-text-results" aria-live="polite">
-                  {filteredVariants.map((variant) => (
-                    <article key={variant.id} className="stylish-text-row">
-                      <div className="stylish-text-row__content">
+                  {paginatedVariants.map((variant) => {
+                    const isFavorite = favorites.has(variant.id);
+                    return (
+                      <article
+                        key={variant.id}
+                        className={`stylish-text-row${!hasGenerated ? ' stylish-text-row--preview' : ''}`}
+                      >
+                        <button
+                          type="button"
+                          className={`stylish-text-row__favorite${isFavorite ? ' stylish-text-row__favorite--active' : ''}`}
+                          onClick={() => toggleFavorite(variant.id)}
+                          aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                          aria-pressed={isFavorite}
+                        >
+                          <HeartIcon filled={isFavorite} />
+                        </button>
                         <p className="stylish-text-row__output" lang="en">
                           {variant.text}
                         </p>
-                        <div className="stylish-text-row__meta">
-                          <span className="stylish-text-row__category">{variant.category}</span>
-                          <span className="stylish-text-row__name">{variant.name}</span>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        className="stylish-text-row__copy"
-                        onClick={() => handleCopy(variant.id, variant.text)}
-                        aria-label={`Copy ${variant.name} style`}
-                      >
-                        {copiedId === variant.id ? 'Copied!' : 'Copy'}
-                      </button>
-                    </article>
-                  ))}
+                        <button
+                          type="button"
+                          className="stylish-text-row__copy"
+                          onClick={() => handleCopy(variant.id, variant.text)}
+                          aria-label={`Copy ${variant.name} style`}
+                          title={
+                            hasGenerated
+                              ? `Copy ${variant.name}`
+                              : 'Generate stylish text first (20 credits)'
+                          }
+                        >
+                          <CopyIcon />
+                          <span>{copiedId === variant.id ? 'Copied!' : 'Copy'}</span>
+                        </button>
+                      </article>
+                    );
+                  })}
+                </div>
+
+                <div className="stylish-text-results-panel__footer">
+                  <p className="stylish-text-results-panel__range">
+                    <span aria-hidden="true">✨</span>
+                    Showing {rangeStart} to {rangeEnd} of {sortedVariants.length} fonts
+                  </p>
+                  <nav className="stylish-text-pagination" aria-label="Font results pagination">
+                    <button
+                      type="button"
+                      className="stylish-text-pagination__btn"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={safePage <= 1}
+                      aria-label="Previous page"
+                    >
+                      ‹
+                    </button>
+                    {getPageNumbers().map((item, index) =>
+                      item === 'ellipsis' ? (
+                        <span key={`ellipsis-${index}`} className="stylish-text-pagination__ellipsis">
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={item}
+                          type="button"
+                          className={`stylish-text-pagination__page${safePage === item ? ' stylish-text-pagination__page--active' : ''}`}
+                          onClick={() => setPage(item)}
+                          aria-current={safePage === item ? 'page' : undefined}
+                        >
+                          {item}
+                        </button>
+                      ),
+                    )}
+                    <button
+                      type="button"
+                      className="stylish-text-pagination__btn"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={safePage >= totalPages}
+                      aria-label="Next page"
+                    >
+                      ›
+                    </button>
+                  </nav>
                 </div>
               </div>
             </div>
