@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
 import Platforms from './pages/Platforms';
@@ -22,6 +23,9 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Disclaimer from './pages/Disclaimer';
 import Dmca from './pages/Dmca';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Account from './pages/Account';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -46,6 +50,16 @@ export default function App() {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute>
+              <Account />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/privacy-policy" element={<Privacy />} />
         <Route path="/terms-and-conditions" element={<Terms />} />
         <Route path="/dmca" element={<Dmca />} />

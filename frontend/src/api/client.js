@@ -6,8 +6,16 @@ function getApiBase() {
     import.meta.env.VITE_API_URL?.trim() ||
     '';
 
-  const base = configured || PRODUCTION_API_BASE;
-  return base.replace(/\/$/, '');
+  if (configured) {
+    return configured.replace(/\/$/, '');
+  }
+
+  // In Vite dev, use relative /api paths so the proxy hits the local backend.
+  if (import.meta.env.DEV) {
+    return '';
+  }
+
+  return PRODUCTION_API_BASE;
 }
 
 const API_BASE = getApiBase();

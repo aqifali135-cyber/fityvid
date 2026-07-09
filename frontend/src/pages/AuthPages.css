@@ -1,0 +1,129 @@
+.auth-page {
+  min-height: calc(100vh - 220px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2.5rem 1.25rem 4rem;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(167, 139, 250, 0.18), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 90% 10%, rgba(96, 165, 250, 0.16), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 50% 100%, rgba(244, 114, 182, 0.08), transparent 55%);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 2rem 1.75rem;
+  box-sizing: border-box;
+}
+
+.auth-card__header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-card__eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7c3aed;
+}
+
+.auth-card__title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.6rem, 4vw, 1.9rem);
+  font-weight: 800;
+  color: #1e1b4b;
+}
+
+.auth-card__subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.auth-card__footer {
+  margin: 1.25rem 0 0;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.auth-card__footer a {
+  color: #7c3aed;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-card__footer a:hover {
+  text-decoration: underline;
+}
+
+.auth-alert {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.auth-alert--error {
+  background: rgba(254, 226, 226, 0.9);
+  color: #b91c1c;
+  border: 1px solid rgba(248, 113, 113, 0.45);
+}
+
+.auth-loading {
+  margin: 0;
+  text-align: center;
+  color: #64748b;
+}
+
+.account-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(237, 233, 254, 0.65), rgba(219, 234, 254, 0.5));
+  border: 1px solid rgba(167, 139, 250, 0.22);
+}
+
+.account-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.account-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #7c3aed;
+}
+
+.account-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e1b4b;
+  word-break: break-word;
+}
+
+.account-value--status {
+  color: #059669;
+}
+
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .auth-card {
+    padding: 1.5rem 1.15rem;
+  }
+}

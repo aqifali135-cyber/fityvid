@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import Logo from './Logo';
+import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 const links = [
@@ -16,23 +17,35 @@ const links = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const [loginNotice, setLoginNotice] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, loading, logout } = useAuth();
+  const menuRef = useRef(null);
 
   useEffect(() => {
     setOpen(false);
-    setLoginNotice(false);
+    setMenuOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!loginNotice) return undefined;
-    const timer = setTimeout(() => setLoginNotice(false), 2800);
-    return () => clearTimeout(timer);
-  }, [loginNotice]);
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  function handleLoginClick() {
-    setLoginNotice(true);
+  async function handleLogout() {
+    setMenuOpen(false);
+    setOpen(false);
+    await logout();
+    navigate('/login');
   }
+
+  const firstName = user?.name?.trim()?.split(/\s+/)[0] || 'Account';
 
   return (
     <header className="navbar">
@@ -62,19 +75,54 @@ export default function Navbar() {
                 <span className="nav-link__label">{label}</span>
               </NavLink>
             ))}
-            <div className="navbar-login-wrap">
-              <button
-                type="button"
-                className="navbar-login-btn"
-                onClick={handleLoginClick}
-                aria-describedby={loginNotice ? 'navbar-login-notice' : undefined}
-              >
-                Login
-              </button>
-              {loginNotice && (
-                <p id="navbar-login-notice" className="navbar-login-notice" role="status">
-                  Login system coming soon
-                </p>
+
+            <div className="navbar-login-wrap" ref={menuRef}>
+              {loading ? (
+                <span className="navbar-auth-loading" aria-hidden="true">
+                  …
+                </span>
+              ) : isAuthenticated ? (
+                <>
+                  <button
+                    type="button"
+                    className="navbar-user-btn"
+                    aria-expanded={menuOpen}
+                    aria-haspopup="menu"
+                    onClick={() => setMenuOpen((prev) => !prev)}
+                  >
+                    <span className="navbar-user-avatar" aria-hidden="true">
+                      {(user?.name || 'U').charAt(0).toUpperCase()}
+                    </span>
+                    <span className="navbar-user-name">{firstName}</span>
+                  </button>
+                  {menuOpen && (
+                    <div className="navbar-user-menu" role="menu">
+                      <NavLink
+                        to="/account"
+                        role="menuitem"
+                        className="navbar-user-menu__item"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setOpen(false);
+                        }}
+                      >
+                        Account
+                      </NavLink>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="navbar-user-menu__item navbar-user-menu__item--button"
+                        onClick={handleLogout}
+                      >
+                        Log out
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <NavLink to="/login" className="navbar-login-btn" onClick={() => setOpen(false)}>
+                  Login
+                </NavLink>
               )}
             </div>
           </nav>
