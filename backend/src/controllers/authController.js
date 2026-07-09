@@ -43,7 +43,7 @@ export async function signup(req, res) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = createUser({ name, email, passwordHash });
+    const user = await createUser({ name, email, passwordHash });
     const token = signAuthToken(user);
 
     return res.status(201).json({
@@ -55,6 +55,9 @@ export async function signup(req, res) {
   } catch (error) {
     if (error.code === 'EMAIL_EXISTS') {
       return res.status(409).json({ success: false, message: error.message });
+    }
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Signup error:', error);
     }
     return res.status(500).json({
       success: false,
@@ -75,7 +78,7 @@ export async function login(req, res) {
       });
     }
 
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
     if (!user) {
       return res.status(401).json({
         success: false,

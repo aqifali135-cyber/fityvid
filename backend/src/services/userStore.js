@@ -1,79 +1,24 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
+import { ensureUsersTable, getPool } from './db.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.join(__dirname, '../../data');
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
+function rowToUser(row) {
+  if (!row) return null;
 
-function ensureStore() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(USERS_FILE)) {
-    fs.writeFileSync(USERS_FILE, JSON.stringify({ users: [] }, null, 2), 'utf8');
-  }
-}
-
-function readDb() {
-  ensureStore();
-  try {
-    const raw = fs.readFileSync(USERS_FILE, 'utf8');
-    const parsed = JSON.parse(raw);
-    if (!parsed || !Array.isArray(parsed.users)) {
-      return { users: [] };
-    }
-    return parsed;
-  } catch {
-    return { users: [] };
-  }
-}
-
-function writeDb(db) {
-  ensureStore();
-  fs.writeFileSync(USERS_FILE, JSON.stringify(db, null, 2), 'utf8');
-}
-
-export function findUserByEmail(email) {
-  const normalized = String(email || '').trim().toLowerCase();
-  return readDb().users.find((user) => user.email === normalized) || null;
-}
-
-export function findUserById(id) {
-  return readDb().users.find((user) => user.id === id) || null;
-}
-
-export function createUser({ name, email, passwordHash }) {
-  const db = readDb();
-  const normalizedEmail = String(email).trim().toLowerCase();
-  if (db.users.some((user) => user.email === normalizedEmail)) {
-    const error = new Error('An account with this email already exists.');
-    error.code = 'EMAIL_EXISTS';
-    throw error;
-  }
-
-  const user = {
-    id: randomUUID(),
-    name: String(name).trim(),
-    email: normalizedEmail,
-    passwordHash,
-    hashtagFreeSearchUsed: false,
-    createdAt: new Date().toISOString(),
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    passwordHash: row.password_hash,
+    hashtagFreeSearchUsed: Boolean(row.hashtag_free_search_used),
+    createdAt: row.created_at,
   };
-
-  db.users.push(user);
-  writeDb(db);
-  return sanitizeUser(user);
 }
 
-export function updateUser(id, patch) {
-  const db = readDb();
-  const index = db.users.findIndex((user) => user.id === id);
-  if (index === -1) return null;
-  db.users[index] = { ...db.users[index], ...patch };
-  writeDb(db);
-  return sanitizeUser(db.users[index]);
+function formatCreatedAt(value) {
+  if (!value) return undefined;
+  if (value instanceof Date) return value.toISOString();
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toISOString();
 }
 
 export function sanitizeUser(user) {
@@ -82,6 +27,89 @@ export function sanitizeUser(user) {
     id: user.id,
     name: user.name,
     email: user.email,
-    createdAt: user.createdAt,
+    createdAt: formatCreatedAt(user.createdAt),
   };
+}
+
+export async function findUserByEmail(email) {
+  await ensureUsersTable();
+  const normalized = String(email || '').trim().toLowerCase();
+  const [rows] = await getPool().execute(
+    'SELECT * FROM users WHERE email = ? LIMIT 1',
+    [normalized],
+  );
+  return rowToUser(rows[0]) || null;
+}
+
+export async function findUserById(id) {
+  await ensureUsersTable();
+  const [rows] = await getPool().execute('SELECT * FROM users WHERE id = ? LIMIT 1', [id]);
+  return rowToUser(rows[0]) || null;
+}
+
+export async function createUser({ name, email, passwordHash }) {
+  await ensureUsersTable();
+
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const userName = String(name).trim();
+  const id = randomUUID();
+
+  try {
+    await getPool().execute(
+      'INSERT INTO users (id, name, email, password_hash) VALUES (?, ?, ?, ?)',
+      [id, userName, normalizedEmail, passwordHash],
+    );
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      const duplicate = new Error('An account with this email already exists.');
+      duplicate.code = 'EMAIL_EXISTS';
+      throw duplicate;
+    }
+    throw error;
+  }
+
+  return sanitizeUser({
+    id,
+    name: userName,
+    email: normalizedEmail,
+    createdAt: new Date().toISOString(),
+  });
+}
+
+export async function updateUser(id, patch) {
+  await ensureUsersTable();
+
+  const fields = [];
+  const values = [];
+
+  if (patch.name !== undefined) {
+    fields.push('name = ?');
+    values.push(String(patch.name).trim());
+  }
+  if (patch.email !== undefined) {
+    fields.push('email = ?');
+    values.push(String(patch.email).trim().toLowerCase());
+  }
+  if (patch.passwordHash !== undefined) {
+    fields.push('password_hash = ?');
+    values.push(patch.passwordHash);
+  }
+  if (patch.hashtagFreeSearchUsed !== undefined) {
+    fields.push('hashtag_free_search_used = ?');
+    values.push(patch.hashtagFreeSearchUsed ? 1 : 0);
+  }
+
+  if (fields.length === 0) {
+    return findUserById(id).then(sanitizeUser);
+  }
+
+  values.push(id);
+  const [result] = await getPool().execute(
+    `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
+    values,
+  );
+
+  if (result.affectedRows === 0) return null;
+  const user = await findUserById(id);
+  return sanitizeUser(user);
 }

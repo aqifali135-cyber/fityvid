@@ -50,14 +50,14 @@ export function extractToken(req) {
   return null;
 }
 
-export function requireAuth(req, res, next) {
+export async function requireAuth(req, res, next) {
   try {
     const token = extractToken(req);
     if (!token) {
       return res.status(401).json({ success: false, message: 'Please log in to continue.' });
     }
     const payload = verifyAuthToken(token);
-    const user = findUserById(payload.sub);
+    const user = await findUserById(payload.sub);
     if (!user) {
       return res.status(401).json({ success: false, message: 'Account not found. Please log in again.' });
     }

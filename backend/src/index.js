@@ -11,6 +11,7 @@ import { checkYtDlp, getYtDlpVersion } from './utils/ytdlpRunner.js';
 import { checkFfmpeg, getFfmpegVersionShort } from './services/ffmpegService.js';
 import { getVideoProvider } from './utils/videoProvider.js';
 import { isRapidApiConfigured } from './services/rapidApiAllInOneService.js';
+import { initDatabase } from './services/db.js';
 
 const app = express();
 const PORT = process.env.PORT || 8787;
@@ -42,6 +43,8 @@ app.listen(PORT, async () => {
   const provider = getVideoProvider();
   console.log(`FityVid API running on http://localhost:${PORT}`);
   console.log(`Video provider: ${provider}`);
+
+  await initDatabase();
 
   if (provider === 'rapidapi_all_in_one') {
     console.log(`RapidAPI configured: ${isRapidApiConfigured() ? 'yes' : 'no (set RAPIDAPI_KEY)'}`);
