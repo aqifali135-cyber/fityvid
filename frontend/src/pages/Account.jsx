@@ -9,6 +9,7 @@ function formatTransactionType(type) {
   if (type === 'signup_bonus') return 'Signup bonus';
   if (type === 'spend') return 'Credits used';
   if (type === 'refund') return 'Refund';
+  if (type === 'purchase') return 'Purchase';
   if (type === 'purchase_pending') return 'Purchase';
   return type;
 }

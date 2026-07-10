@@ -102,11 +102,37 @@ export async function ensureCreditTransactionsTable() {
   `);
 }
 
+export async function ensurePaymentOrdersTable() {
+  const db = getPool();
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS payment_orders (
+      id VARCHAR(64) PRIMARY KEY,
+      user_id VARCHAR(64) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      package_key VARCHAR(50) NOT NULL,
+      package_name VARCHAR(150) NOT NULL,
+      credits INT NOT NULL,
+      amount INT NOT NULL,
+      currency VARCHAR(10) NOT NULL DEFAULT 'PKR',
+      gateway VARCHAR(50) NOT NULL DEFAULT 'lemonsqueezy',
+      gateway_checkout_id VARCHAR(255) NULL,
+      gateway_order_id VARCHAR(255) NULL,
+      status VARCHAR(30) NOT NULL DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      paid_at TIMESTAMP NULL,
+      INDEX idx_payment_orders_user_id (user_id),
+      INDEX idx_payment_orders_status (status),
+      UNIQUE INDEX idx_payment_orders_gateway_order_id (gateway_order_id)
+    )
+  `);
+}
+
 export async function ensureSchema() {
   if (!schemaReady) {
     schemaReady = (async () => {
       await ensureUsersTable();
       await ensureCreditTransactionsTable();
+      await ensurePaymentOrdersTable();
     })();
   }
   return schemaReady;

@@ -1,5 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
+import { useAuth } from '../context/AuthContext';
+import { createCheckout } from '../api/payments';
 import './Pricing.css';
 
 const PACKAGES = [
@@ -7,7 +10,7 @@ const PACKAGES = [
     id: 'starter',
     name: 'Starter Pack',
     credits: 200,
-    price: 4.99,
+    priceLabel: 'PKR 1,499',
     uses: 10,
     icon: 'rocket',
   },
@@ -15,7 +18,7 @@ const PACKAGES = [
     id: 'creator',
     name: 'Creator Pack',
     credits: 600,
-    price: 9.99,
+    priceLabel: 'PKR 2,999',
     uses: 30,
     popular: true,
     icon: 'star',
@@ -24,7 +27,7 @@ const PACKAGES = [
     id: 'growth',
     name: 'Growth Pack',
     credits: 1500,
-    price: 19.99,
+    priceLabel: 'PKR 5,999',
     uses: 75,
     icon: 'chart',
   },
@@ -32,7 +35,7 @@ const PACKAGES = [
     id: 'business',
     name: 'Business Pack',
     credits: 4000,
-    price: 39.99,
+    priceLabel: 'PKR 11,999',
     uses: 200,
     icon: 'briefcase',
   },
@@ -97,11 +100,38 @@ function PackIcon({ type }) {
 }
 
 export default function Pricing() {
+  const navigate = useNavigate();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const [loadingPackage, setLoadingPackage] = useState('');
   const [notice, setNotice] = useState('');
 
-  function handleBuyClick() {
-    setNotice('Payment system will be available soon.');
-    setTimeout(() => setNotice(''), 4000);
+  async function handleBuyClick(packageKey) {
+    setNotice('');
+
+    if (authLoading) return;
+
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/pricing' } });
+      return;
+    }
+
+    setLoadingPackage(packageKey);
+    try {
+      const data = await createCheckout({ packageKey });
+      if (!data?.checkoutUrl) {
+        throw new Error('Checkout URL missing. Please try again.');
+      }
+      window.location.href = data.checkoutUrl;
+    } catch (err) {
+      if (err.status === 401) {
+        navigate('/login', { state: { from: '/pricing' } });
+        return;
+      }
+      setNotice(err.message || 'Unable to start checkout. Please try again.');
+      setTimeout(() => setNotice(''), 5000);
+    } finally {
+      setLoadingPackage('');
+    }
   }
 
   return (
@@ -126,28 +156,36 @@ export default function Pricing() {
           </header>
 
           <div className="pricing-grid">
-            {PACKAGES.map((pack) => (
-              <article
-                key={pack.id}
-                className={`pricing-card${pack.popular ? ' pricing-card--popular' : ''}`}
-              >
-                {pack.popular && <span className="pricing-card__badge">Popular</span>}
-                <div
-                  className={`pricing-card__icon pricing-card__icon--${pack.icon}${
-                    pack.icon === 'star' ? ' pricing-card__icon--accent' : ''
-                  }`}
+            {PACKAGES.map((pack) => {
+              const busy = loadingPackage === pack.id;
+              return (
+                <article
+                  key={pack.id}
+                  className={`pricing-card${pack.popular ? ' pricing-card--popular' : ''}`}
                 >
-                  <PackIcon type={pack.icon} />
-                </div>
-                <h2 className="pricing-card__name">{pack.name}</h2>
-                <div className="pricing-card__credits">{pack.credits.toLocaleString()} Credits</div>
-                <div className="pricing-card__price">${pack.price.toFixed(2)}</div>
-                <p className="pricing-card__uses">Good for {pack.uses} tool uses</p>
-                <button type="button" className="pricing-card__btn" onClick={handleBuyClick}>
-                  Buy Credits
-                </button>
-              </article>
-            ))}
+                  {pack.popular && <span className="pricing-card__badge">Popular</span>}
+                  <div
+                    className={`pricing-card__icon pricing-card__icon--${pack.icon}${
+                      pack.icon === 'star' ? ' pricing-card__icon--accent' : ''
+                    }`}
+                  >
+                    <PackIcon type={pack.icon} />
+                  </div>
+                  <h2 className="pricing-card__name">{pack.name}</h2>
+                  <div className="pricing-card__credits">{pack.credits.toLocaleString()} Credits</div>
+                  <div className="pricing-card__price">{pack.priceLabel}</div>
+                  <p className="pricing-card__uses">Good for {pack.uses} tool uses</p>
+                  <button
+                    type="button"
+                    className="pricing-card__btn"
+                    onClick={() => handleBuyClick(pack.id)}
+                    disabled={Boolean(loadingPackage)}
+                  >
+                    {busy ? 'Redirecting…' : 'Buy Credits'}
+                  </button>
+                </article>
+              );
+            })}
           </div>
 
           {notice && (

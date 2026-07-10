@@ -5,6 +5,8 @@ import hashtagRoutes from './routes/hashtagRoutes.js';
 import videoRoutes from './routes/videoRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import creditRoutes from './routes/creditRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import { lemonWebhook } from './controllers/paymentController.js';
 import { healthHandler } from './controllers/downloadController.js';
 import { downloadVideo } from './controllers/videoController.js';
 import { videoInfoLimiter, downloadLimiter } from './middleware/rateLimit.js';
@@ -22,22 +24,59 @@ const PORT = process.env.PORT || 8787;
 app.set('trust proxy', 1);
 
 app.use(cors());
+
+// Lemon Squeezy webhooks need the raw body for signature verification.
+// Must be registered before express.json() and only for this exact path.
+app.post(
+  '/api/payments/lemon-webhook',
+  express.raw({ type: '*/*' }),
+  (req, res, next) => {
+    console.log('[payments] lemon-webhook hit');
+    return lemonWebhook(req, res, next);
+  },
+);
+
 app.use(express.json({ limit: '32kb' }));
 
 app.get('/api/health', healthHandler);
+
+// Auth / credits / payments before video routes
 app.use('/api/auth', authRoutes);
 app.use('/api/credits', creditRoutes);
+app.use('/api/payments', paymentRoutes);
+
 app.use('/api/hashtags', hashtagRoutes);
 app.use('/api/video', videoInfoLimiter, videoRoutes);
 app.get('/api/download', downloadLimiter, downloadVideo);
 
-app.use((err, _req, res, _next) => {
+app.use((err, req, res, _next) => {
   if (process.env.NODE_ENV !== 'production') {
-    console.error(err);
+    console.error('[api error]', req.method, req.originalUrl, err.message || err);
   }
-  res.status(500).json({
+
+  if (res.headersSent) return;
+
+  // Body-parser / JSON parse failures
+  if (err?.type === 'entity.parse.failed' || err?.status === 400) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid JSON body.',
+    });
+  }
+
+  const isVideoRoute =
+    req.originalUrl?.startsWith('/api/video') || req.originalUrl?.startsWith('/api/download');
+
+  if (isVideoRoute) {
+    return res.status(err.status || 500).json({
+      success: false,
+      message: 'Unable to fetch video details. Please try another public video link.',
+    });
+  }
+
+  return res.status(err.status || 500).json({
     success: false,
-    message: 'Unable to fetch video details. Please try another public video link.',
+    message: err.message || 'Something went wrong. Please try again.',
   });
 });
 
@@ -45,6 +84,7 @@ app.listen(PORT, async () => {
   const provider = getVideoProvider();
   console.log(`FityVid API running on http://localhost:${PORT}`);
   console.log(`Video provider: ${provider}`);
+  console.log('Payment routes: POST /api/payments/create-checkout, POST /api/payments/lemon-webhook');
 
   await initDatabase();
 
