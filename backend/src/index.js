@@ -10,6 +10,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import { lemonWebhook } from './controllers/paymentController.js';
 import { healthHandler } from './controllers/downloadController.js';
 import { downloadVideo } from './controllers/videoController.js';
+import { tiktokVideoDownload } from './controllers/tiktokController.js';
 import { videoInfoLimiter, downloadLimiter } from './middleware/rateLimit.js';
 import { checkYtDlp, getYtDlpVersion } from './utils/ytdlpRunner.js';
 import { checkFfmpeg, getFfmpegVersionShort } from './services/ffmpegService.js';
@@ -49,7 +50,11 @@ app.use('/api/payments', paymentRoutes);
 
 app.use('/api/hashtags', hashtagRoutes);
 app.use('/api/video', videoInfoLimiter, videoRoutes);
+
+// TikTok Video Downloader — exact live route used by the frontend
+app.post('/api/tiktok/video-download', videoInfoLimiter, tiktokVideoDownload);
 app.use('/api/tiktok', videoInfoLimiter, tiktokRoutes);
+
 app.get('/api/download', downloadLimiter, downloadVideo);
 
 app.use((err, req, res, _next) => {
