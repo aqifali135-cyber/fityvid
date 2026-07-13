@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import hashtagRoutes from './routes/hashtagRoutes.js';
 import videoRoutes from './routes/videoRoutes.js';
+import tiktokRoutes from './routes/tiktokRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import creditRoutes from './routes/creditRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
@@ -14,6 +15,7 @@ import { checkYtDlp, getYtDlpVersion } from './utils/ytdlpRunner.js';
 import { checkFfmpeg, getFfmpegVersionShort } from './services/ffmpegService.js';
 import { getVideoProvider } from './utils/videoProvider.js';
 import { isRapidApiConfigured } from './services/rapidApiAllInOneService.js';
+import { isTiktokDownloaderConfigured } from './services/tiktokDownloaderService.js';
 import { initDatabase } from './services/db.js';
 
 const app = express();
@@ -47,6 +49,7 @@ app.use('/api/payments', paymentRoutes);
 
 app.use('/api/hashtags', hashtagRoutes);
 app.use('/api/video', videoInfoLimiter, videoRoutes);
+app.use('/api/tiktok', videoInfoLimiter, tiktokRoutes);
 app.get('/api/download', downloadLimiter, downloadVideo);
 
 app.use((err, req, res, _next) => {
@@ -65,7 +68,9 @@ app.use((err, req, res, _next) => {
   }
 
   const isVideoRoute =
-    req.originalUrl?.startsWith('/api/video') || req.originalUrl?.startsWith('/api/download');
+    req.originalUrl?.startsWith('/api/video') ||
+    req.originalUrl?.startsWith('/api/download') ||
+    req.originalUrl?.startsWith('/api/tiktok');
 
   if (isVideoRoute) {
     return res.status(err.status || 500).json({
@@ -85,12 +90,17 @@ app.listen(PORT, async () => {
   console.log(`FityVid API running on http://localhost:${PORT}`);
   console.log(`Video provider: ${provider}`);
   console.log('Payment routes: POST /api/payments/create-checkout, POST /api/payments/lemon-webhook');
+  console.log('TikTok route: POST /api/tiktok/video-download');
 
   await initDatabase();
 
   if (provider === 'rapidapi_all_in_one') {
     console.log(`RapidAPI configured: ${isRapidApiConfigured() ? 'yes' : 'no (set RAPIDAPI_KEY)'}`);
   }
+
+  console.log(
+    `TikTok downloader configured: ${isTiktokDownloaderConfigured() ? 'yes' : 'no (set TIKTOK_DOWNLOADER_API_URL and TIKTOK_DOWNLOADER_API_KEY)'}`,
+  );
 
   const ready = await checkYtDlp();
   if (provider === 'yt-dlp') {
