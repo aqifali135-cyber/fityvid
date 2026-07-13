@@ -120,17 +120,6 @@ export default function TiktokVideoDownloader() {
       <JsonLd data={[webApplicationSchema, faqPageSchema(FAQ_ITEMS)]} />
 
       <div className="ttd-page">
-        <nav className="ttd-subnav" aria-label="TikTok downloader tools">
-          <div className="container ttd-subnav__inner">
-            <Link to="/tiktok-story-downloader" className="ttd-subnav__link">
-              Download TikTok Stories
-            </Link>
-            <Link to="/tiktok-mp3-downloader" className="ttd-subnav__link">
-              Download TikTok MP3
-            </Link>
-          </div>
-        </nav>
-
         <section className="ttd-hero" aria-labelledby="ttd-hero-title">
           <div className="ttd-hero__bg" aria-hidden="true">
             <span className="ttd-hero__orb ttd-hero__orb--left" />
@@ -139,7 +128,21 @@ export default function TiktokVideoDownloader() {
           </div>
 
           <div className="container ttd-hero__inner">
-            <p className="ttd-hero__badge">TikTok tool</p>
+            <div className="ttd-tools-row" aria-label="TikTok downloader tools">
+              <Link
+                to="/tiktok-story-downloader"
+                className="ttd-tools-row__link ttd-tools-row__link--left"
+              >
+                Download TikTok Stories
+              </Link>
+              <p className="ttd-hero__badge">TikTok tool</p>
+              <Link
+                to="/tiktok-mp3-downloader"
+                className="ttd-tools-row__link ttd-tools-row__link--right"
+              >
+                Download TikTok MP3
+              </Link>
+            </div>
             <h1 id="ttd-hero-title" className="ttd-hero__title">
               TikTok Video Downloader{' '}
               <span className="ttd-hero__highlight">Without Watermark</span>
