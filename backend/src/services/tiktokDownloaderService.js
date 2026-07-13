@@ -5,9 +5,14 @@
  * RapidAPI:
  *   GET https://{RAPIDAPI_TIKTOK_HOST}/vid/index?url={tiktokUrl}
  *   Headers: X-RapidAPI-Key, X-RapidAPI-Host
+ *
+ * Short links (vt.tiktok.com / vm.tiktok.com) are resolved on the backend
+ * before calling RapidAPI.
  */
 
 const REQUEST_TIMEOUT_MS = 45000;
+const REDIRECT_TIMEOUT_MS = 15000;
+const MAX_REDIRECTS = 8;
 const DEFAULT_HOST =
   'tiktok-downloader-download-tiktok-videos-without-watermark.p.rapidapi.com';
 const API_PATH = '/vid/index';
@@ -19,6 +24,8 @@ const TIKTOK_HOSTS = [
   'vm.tiktok.com',
   'vt.tiktok.com',
 ];
+
+const SHORT_LINK_HOSTS = ['vt.tiktok.com', 'vm.tiktok.com'];
 
 function isHttpUrl(value) {
   if (typeof value !== 'string') return false;
@@ -60,8 +67,18 @@ function isTiktokHost(hostname) {
   });
 }
 
+function isShortTiktokLink(urlString) {
+  try {
+    const host = normalizeHost(new URL(urlString).hostname);
+    return SHORT_LINK_HOSTS.includes(host);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Validate that a URL is a public TikTok video / share link.
+ * Accepts full links and vt/vm short links.
  */
 export function validateTiktokDownloadUrl(url) {
   if (!url || typeof url !== 'string' || !url.trim()) {
@@ -111,6 +128,196 @@ function getApiConfig() {
 }
 
 /**
+ * Prefer a clean canonical TikTok video URL from a redirected location.
+ * Example: https://www.tiktok.com/@user/video/1234567890
+ */
+export function extractCanonicalTiktokVideoUrl(urlString) {
+  if (!isHttpUrl(urlString)) return null;
+
+  try {
+    const parsed = new URL(urlString);
+    if (!isTiktokHost(parsed.hostname)) return null;
+
+    const fullMatch = parsed.pathname.match(/\/(@[^/]+\/video\/\d+)/i);
+    if (fullMatch) {
+      return `https://www.tiktok.com/${fullMatch[1]}`;
+    }
+
+    const videoOnly = parsed.pathname.match(/\/video\/(\d+)/i);
+    if (videoOnly) {
+      return `https://www.tiktok.com/video/${videoOnly[1]}`;
+    }
+
+    // Fallback: keep TikTok host + path without query/hash.
+    const path = parsed.pathname.replace(/\/+$/, '') || '/';
+    if (path === '/' || isShortTiktokLink(urlString)) {
+      return null;
+    }
+
+    return `https://www.tiktok.com${path}`;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Follow HTTP redirects for vt/vm short links and return a full TikTok URL.
+ * Never logs secrets.
+ */
+export async function resolveTiktokShortUrl(shortUrl) {
+  let current = shortUrl;
+
+  for (let hop = 0; hop < MAX_REDIRECTS; hop += 1) {
+    let response;
+    try {
+      response = await fetch(current, {
+        method: 'GET',
+        redirect: 'manual',
+        headers: {
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        },
+        signal: AbortSignal.timeout(REDIRECT_TIMEOUT_MS),
+      });
+    } catch (err) {
+      const timedOut =
+        err?.name === 'TimeoutError' ||
+        err?.name === 'AbortError' ||
+        /aborted|timeout/i.test(String(err?.message || ''));
+
+      console.error('[tiktok-downloader] URL redirect resolution failed', {
+        reason: timedOut ? 'timeout' : 'network',
+        hop,
+        shortHost: (() => {
+          try {
+            return new URL(shortUrl).hostname;
+          } catch {
+            return 'invalid';
+          }
+        })(),
+        message: String(err?.message || 'unknown').slice(0, 200),
+      });
+
+      return {
+        ok: false,
+        message: timedOut
+          ? 'TikTok short link resolution timed out. Please try again or use the full video URL.'
+          : 'Unable to resolve this TikTok short link. Please try the full video URL.',
+      };
+    }
+
+    const status = response.status;
+
+    if ([301, 302, 303, 307, 308].includes(status)) {
+      const location = response.headers.get('location');
+      if (!location) {
+        console.error('[tiktok-downloader] URL redirect resolution failed', {
+          reason: 'missing_location',
+          status,
+          hop,
+        });
+        return {
+          ok: false,
+          message: 'Unable to resolve this TikTok short link. Please try the full video URL.',
+        };
+      }
+
+      let nextUrl;
+      try {
+        nextUrl = new URL(location, current).toString();
+      } catch {
+        console.error('[tiktok-downloader] URL redirect resolution failed', {
+          reason: 'invalid_location',
+          status,
+          hop,
+        });
+        return {
+          ok: false,
+          message: 'Unable to resolve this TikTok short link. Please try the full video URL.',
+        };
+      }
+
+      let nextHost;
+      try {
+        nextHost = new URL(nextUrl).hostname;
+      } catch {
+        nextHost = '';
+      }
+
+      if (!isTiktokHost(nextHost)) {
+        console.error('[tiktok-downloader] URL redirect resolution failed', {
+          reason: 'non_tiktok_redirect_host',
+          status,
+          hop,
+          nextHost: nextHost || 'unknown',
+        });
+        return {
+          ok: false,
+          message: 'Unable to resolve this TikTok short link. Please try the full video URL.',
+        };
+      }
+
+      current = nextUrl;
+      continue;
+    }
+
+    // Non-redirect response — use the current URL (after any previous hops).
+    const canonical = extractCanonicalTiktokVideoUrl(current);
+    if (!canonical) {
+      console.error('[tiktok-downloader] URL redirect resolution failed', {
+        reason: 'no_canonical_video_url',
+        status,
+        hop,
+        pathPreview: (() => {
+          try {
+            return new URL(current).pathname.slice(0, 80);
+          } catch {
+            return 'invalid';
+          }
+        })(),
+      });
+      return {
+        ok: false,
+        message: 'Unable to resolve this TikTok short link. Please try the full video URL.',
+      };
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[tiktok-downloader] short link resolved', {
+        fromHost: (() => {
+          try {
+            return new URL(shortUrl).hostname;
+          } catch {
+            return 'invalid';
+          }
+        })(),
+        hops: hop,
+        resolvedPath: (() => {
+          try {
+            return new URL(canonical).pathname;
+          } catch {
+            return 'invalid';
+          }
+        })(),
+      });
+    }
+
+    return { ok: true, url: canonical };
+  }
+
+  console.error('[tiktok-downloader] URL redirect resolution failed', {
+    reason: 'max_redirects',
+    maxRedirects: MAX_REDIRECTS,
+  });
+
+  return {
+    ok: false,
+    message: 'Unable to resolve this TikTok short link. Please try the full video URL.',
+  };
+}
+
+/**
  * RapidAPI often returns fields as arrays (e.g. video[0], description[0]).
  */
 function firstValue(value) {
@@ -153,13 +360,10 @@ function looksLikePrivateOrUnsupported(message) {
 
 /**
  * Map RapidAPI /vid/index payload into FityVid response shape.
- * Missing values become null.
- *
- * Common RapidAPI fields:
- * - title  <- description[0] | title | desc
- * - thumbnail <- cover[0] | origin_cover[0] | thumbnail
- * - videoUrl <- video[0] | play[0] | download_url
- * - audioUrl <- music[0] | music_url | audio
+ * Required mapping:
+ *   video[0] -> videoUrl
+ *   music[0] -> audioUrl
+ *   cover[0] -> thumbnail
  */
 export function normalizeTiktokDownloaderResponse(raw) {
   if (!raw || typeof raw !== 'object') {
@@ -171,7 +375,14 @@ export function normalizeTiktokDownloaderResponse(raw) {
   }
 
   if (raw.success === false || raw.status === 'error' || raw.error === true) {
-    const providerMessage = firstValue(raw.message) || firstValue(raw.error_message) || firstValue(raw.error);
+    const providerMessage =
+      firstValue(raw.message) || firstValue(raw.error_message) || firstValue(raw.error);
+
+    console.error('[tiktok-downloader] RapidAPI payload error', {
+      message: sanitizeText(providerMessage, 220),
+      keys: Object.keys(raw).slice(0, 12),
+    });
+
     return {
       success: false,
       statusCode: 400,
@@ -190,32 +401,18 @@ export function normalizeTiktokDownloaderResponse(raw) {
     300,
   );
 
-  const thumbnail = sanitizeHttpUrl(
-    firstValue(raw.cover) ||
-      firstValue(raw.origin_cover) ||
-      firstValue(raw.dynamic_cover) ||
-      firstValue(raw.thumbnail) ||
-      firstValue(raw.coverUrl),
-  );
-
-  const videoUrl = sanitizeHttpUrl(
-    firstValue(raw.video) ||
-      firstValue(raw.play) ||
-      firstValue(raw.nwm_video_url) ||
-      firstValue(raw.download_url) ||
-      firstValue(raw.videoUrl) ||
-      firstValue(raw.hdplay),
-  );
-
-  const audioUrl = sanitizeHttpUrl(
-    firstValue(raw.music) ||
-      firstValue(raw.music_url) ||
-      firstValue(raw.audio) ||
-      firstValue(raw.audioUrl) ||
-      firstValue(raw.musicUrl),
-  );
+  // Prefer exact RapidAPI array fields first.
+  const thumbnail = sanitizeHttpUrl(firstValue(raw.cover));
+  const videoUrl = sanitizeHttpUrl(firstValue(raw.video));
+  const audioUrl = sanitizeHttpUrl(firstValue(raw.music));
 
   if (!videoUrl) {
+    console.error('[tiktok-downloader] RapidAPI missing video[0]', {
+      keys: Object.keys(raw).slice(0, 12),
+      hasCover: Boolean(firstValue(raw.cover)),
+      hasMusic: Boolean(firstValue(raw.music)),
+    });
+
     return {
       success: false,
       statusCode: 400,
@@ -240,6 +437,12 @@ function mapHttpError(status, parsed) {
     firstValue(parsed?.message) ||
     firstValue(parsed?.error_message) ||
     (typeof parsed?.error === 'string' ? parsed.error : null);
+
+  console.error('[tiktok-downloader] RapidAPI HTTP error', {
+    status,
+    message: sanitizeText(providerMessage, 220),
+    keys: parsed && typeof parsed === 'object' ? Object.keys(parsed).slice(0, 12) : [],
+  });
 
   if (status === 429) {
     return {
@@ -285,7 +488,7 @@ function mapHttpError(status, parsed) {
 
 /**
  * Call RapidAPI TikTok downloader.
- * Never logs API keys or authorization headers.
+ * Resolves vt/vm short links first. Never logs API keys.
  */
 export async function fetchTiktokVideoDownload(tiktokUrl) {
   const config = getApiConfig();
@@ -299,9 +502,23 @@ export async function fetchTiktokVideoDownload(tiktokUrl) {
     };
   }
 
+  let resolvedUrl = tiktokUrl;
+
+  if (isShortTiktokLink(tiktokUrl)) {
+    const resolved = await resolveTiktokShortUrl(tiktokUrl);
+    if (!resolved.ok) {
+      return {
+        success: false,
+        statusCode: 400,
+        message: resolved.message,
+      };
+    }
+    resolvedUrl = resolved.url;
+  }
+
   const { apiKey, host } = config;
   const endpoint = new URL(`https://${host}${API_PATH}`);
-  endpoint.searchParams.set('url', tiktokUrl);
+  endpoint.searchParams.set('url', resolvedUrl);
 
   let response;
   try {
@@ -320,11 +537,11 @@ export async function fetchTiktokVideoDownload(tiktokUrl) {
       err?.name === 'AbortError' ||
       /aborted|timeout/i.test(String(err?.message || ''));
 
-    console.error(
-      '[tiktok-downloader] fetch error:',
-      timedOut ? 'timeout' : 'network',
-      String(err?.message || 'unknown').slice(0, 200),
-    );
+    console.error('[tiktok-downloader] RapidAPI fetch error', {
+      reason: timedOut ? 'timeout' : 'network',
+      message: String(err?.message || 'unknown').slice(0, 200),
+      usedShortLink: isShortTiktokLink(tiktokUrl),
+    });
 
     return {
       success: false,
@@ -341,18 +558,27 @@ export async function fetchTiktokVideoDownload(tiktokUrl) {
   try {
     parsed = bodyText ? JSON.parse(bodyText) : null;
   } catch {
-    console.error('[tiktok-downloader] invalid JSON', {
+    console.error('[tiktok-downloader] RapidAPI invalid JSON', {
       status: response.status,
       bodyPreview: bodyText.slice(0, 300),
+      usedShortLink: isShortTiktokLink(tiktokUrl),
     });
     return mapHttpError(response.status, null);
   }
 
   if (!response.ok) {
-    console.error('[tiktok-downloader] http error', {
+    const providerMessage =
+      firstValue(parsed?.message) ||
+      firstValue(parsed?.error_message) ||
+      (typeof parsed?.error === 'string' ? parsed.error : null);
+
+    console.error('[tiktok-downloader] RapidAPI HTTP status', {
       status: response.status,
+      message: sanitizeText(providerMessage, 220),
+      usedShortLink: isShortTiktokLink(tiktokUrl),
       keys: parsed && typeof parsed === 'object' ? Object.keys(parsed).slice(0, 12) : [],
     });
+
     return mapHttpError(response.status, parsed);
   }
 
