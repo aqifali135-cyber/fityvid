@@ -39,10 +39,10 @@ export async function tiktokVideoDownload(req, res) {
     return res.json({
       success: true,
       data: {
-        title: result.data.title || '',
-        thumbnail: result.data.thumbnail || '',
-        videoUrl: result.data.videoUrl || '',
-        audioUrl: result.data.audioUrl || '',
+        title: result.data.title ?? null,
+        thumbnail: result.data.thumbnail ?? null,
+        videoUrl: result.data.videoUrl ?? null,
+        audioUrl: result.data.audioUrl ?? null,
       },
     });
   } catch (err) {

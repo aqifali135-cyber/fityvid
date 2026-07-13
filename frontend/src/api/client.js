@@ -42,6 +42,26 @@ export async function fetchVideoInfo(url, platform) {
   return { ok: res.ok, data };
 }
 
+export async function fetchTiktokVideoDownload(url) {
+  const res = await fetch(resolveApiUrl('/api/tiktok/video-download'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+  const data = await res.json();
+
+  if (import.meta.env.DEV) {
+    console.debug('[FityVid] tiktok/video-download', {
+      ok: res.ok,
+      success: data?.success,
+      hasVideo: Boolean(data?.data?.videoUrl),
+      hasAudio: Boolean(data?.data?.audioUrl),
+    });
+  }
+
+  return { ok: res.ok, data };
+}
+
 export function triggerDownload(downloadUrl) {
   const href = resolveApiUrl(downloadUrl);
   if (import.meta.env.DEV) {

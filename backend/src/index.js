@@ -99,7 +99,7 @@ app.listen(PORT, async () => {
   }
 
   console.log(
-    `TikTok downloader configured: ${isTiktokDownloaderConfigured() ? 'yes' : 'no (set TIKTOK_DOWNLOADER_API_URL and TIKTOK_DOWNLOADER_API_KEY)'}`,
+    `TikTok downloader configured: ${isTiktokDownloaderConfigured() ? 'yes' : 'no (set RAPIDAPI_TIKTOK_KEY)'}`,
   );
 
   const ready = await checkYtDlp();

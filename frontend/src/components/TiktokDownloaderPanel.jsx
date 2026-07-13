@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { fetchVideoInfo, triggerDownload } from '../api/client';
+import { useState } from 'react';
+import { fetchTiktokVideoDownload, triggerDownload } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { CREDIT_COST, CREDIT_SPENT_MESSAGE } from '../constants/credits';
 import CreditNotice from './CreditNotice';
@@ -8,24 +8,6 @@ import { detectPlatform } from '../utils/detectPlatform';
 
 const FETCH_ERROR = 'Unable to fetch video details. Please try another public TikTok video link.';
 const INVALID_TIKTOK_MSG = 'Please enter a valid public TikTok video link.';
-
-function isAudioOnlyFormat(fmt) {
-  if (!fmt) return false;
-  if (fmt.hasVideo === false) return true;
-  const type = String(fmt.format || fmt.extension || '').toLowerCase();
-  if (['mp3', 'm4a', 'aac', 'opus', 'ogg', 'wav'].includes(type)) return true;
-  const quality = String(fmt.quality || '').toLowerCase();
-  return quality.includes('audio') || quality.includes('mp3');
-}
-
-function pickMp4Format(formats = []) {
-  const videos = formats.filter((fmt) => !isAudioOnlyFormat(fmt));
-  return videos[0] || formats[0] || null;
-}
-
-function pickMp3Format(formats = []) {
-  return formats.find((fmt) => isAudioOnlyFormat(fmt)) || null;
-}
 
 function PasteIcon() {
   return (
@@ -61,9 +43,6 @@ export default function TiktokDownloaderPanel() {
   const [creditNotice, setCreditNotice] = useState(null);
   const [creditSuccess, setCreditSuccess] = useState('');
   const [result, setResult] = useState(null);
-
-  const mp4Format = useMemo(() => pickMp4Format(result?.formats), [result]);
-  const mp3Format = useMemo(() => pickMp3Format(result?.formats), [result]);
 
   function handleUrlChange(value) {
     setUrl(value);
@@ -112,21 +91,16 @@ export default function TiktokDownloaderPanel() {
 
     setLoading(true);
     try {
-      const { data } = await fetchVideoInfo(trimmed, 'tiktok');
+      const { data } = await fetchTiktokVideoDownload(trimmed);
 
-      if (!data?.success) {
+      if (!data?.success || !data?.data?.videoUrl) {
         setError(data?.message || FETCH_ERROR);
         return;
       }
 
-      if (!data.formats?.length) {
-        setError('No downloadable format found for this video.');
-        return;
-      }
-
-      await spendCredits('video_downloader', 'Video download search');
+      await spendCredits('video_downloader', 'TikTok video download');
       setCreditSuccess(CREDIT_SPENT_MESSAGE);
-      setResult(data);
+      setResult(data.data);
     } catch (err) {
       if (err.data?.code === 'INSUFFICIENT_CREDITS') {
         setCreditNotice('insufficient');
@@ -204,30 +178,30 @@ export default function TiktokDownloaderPanel() {
       {result && !loading && (
         <section className="ttd-result" aria-live="polite">
           <div className="ttd-result__media">
-            <VideoThumbnail
-              thumbnail={result.thumbnail}
-              thumbnailDisplay={result.thumbnailDisplay}
-              platform="TikTok"
-            />
+            <VideoThumbnail thumbnail={result.thumbnail || ''} platform="TikTok" />
           </div>
           <div className="ttd-result__body">
-            <h2 className="ttd-result__title">{result.title || 'TikTok video'}</h2>
+            {result.title ? (
+              <h2 className="ttd-result__title">{result.title}</h2>
+            ) : (
+              <h2 className="ttd-result__title">TikTok video</h2>
+            )}
             <div className="ttd-result__actions">
-              {mp4Format && (
+              {result.videoUrl && (
                 <button
                   type="button"
                   className="ttd-result__btn ttd-result__btn--mp4"
-                  onClick={() => triggerDownload(mp4Format.downloadUrl)}
+                  onClick={() => triggerDownload(result.videoUrl)}
                 >
                   <DownloadIcon />
                   Download MP4
                 </button>
               )}
-              {mp3Format && (
+              {result.audioUrl && (
                 <button
                   type="button"
                   className="ttd-result__btn ttd-result__btn--mp3"
-                  onClick={() => triggerDownload(mp3Format.downloadUrl)}
+                  onClick={() => triggerDownload(result.audioUrl)}
                 >
                   <DownloadIcon />
                   Download MP3

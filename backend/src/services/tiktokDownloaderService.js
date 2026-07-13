@@ -1,9 +1,16 @@
 /**
- * TikTok Video Downloader — dedicated third-party API client.
- * Credentials come from env only; never log secret values.
+ * TikTok Video Downloader — RapidAPI client.
+ * Credentials come from env only; never log or return secret values.
+ *
+ * RapidAPI:
+ *   GET https://{RAPIDAPI_TIKTOK_HOST}/vid/index?url={tiktokUrl}
+ *   Headers: X-RapidAPI-Key, X-RapidAPI-Host
  */
 
 const REQUEST_TIMEOUT_MS = 45000;
+const DEFAULT_HOST =
+  'tiktok-downloader-download-tiktok-videos-without-watermark.p.rapidapi.com';
+const API_PATH = '/vid/index';
 
 const TIKTOK_HOSTS = [
   'tiktok.com',
@@ -26,15 +33,16 @@ function isHttpUrl(value) {
 }
 
 function sanitizeText(value, maxLength = 500) {
-  if (typeof value !== 'string') return '';
-  return value
+  if (typeof value !== 'string') return null;
+  const cleaned = value
     .replace(/[\u0000-\u001F\u007F]/g, '')
     .trim()
     .slice(0, maxLength);
+  return cleaned || null;
 }
 
 function sanitizeHttpUrl(value) {
-  if (!isHttpUrl(value)) return '';
+  if (!isHttpUrl(value)) return null;
   return value.trim();
 }
 
@@ -88,92 +96,39 @@ export function validateTiktokDownloadUrl(url) {
 }
 
 export function isTiktokDownloaderConfigured() {
-  return Boolean(
-    process.env.TIKTOK_DOWNLOADER_API_URL?.trim() &&
-      process.env.TIKTOK_DOWNLOADER_API_KEY?.trim(),
-  );
+  return Boolean(process.env.RAPIDAPI_TIKTOK_KEY?.trim());
 }
 
 function getApiConfig() {
-  const apiUrl = process.env.TIKTOK_DOWNLOADER_API_URL?.trim();
-  const apiKey = process.env.TIKTOK_DOWNLOADER_API_KEY?.trim();
+  const apiKey = process.env.RAPIDAPI_TIKTOK_KEY?.trim();
+  if (!apiKey) return null;
 
-  if (!apiUrl || !apiKey) {
+  const host = (
+    process.env.RAPIDAPI_TIKTOK_HOST?.trim() || DEFAULT_HOST
+  ).replace(/^https?:\/\//i, '');
+
+  return { apiKey, host };
+}
+
+/**
+ * RapidAPI often returns fields as arrays (e.g. video[0], description[0]).
+ */
+function firstValue(value) {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (typeof item === 'string' && item.trim()) return item.trim();
+      if (item && typeof item === 'object') {
+        const nested = firstValue(
+          item.url || item.play || item.download || item.src || item.link,
+        );
+        if (nested) return nested;
+      }
+    }
     return null;
   }
 
-  let host = '';
-  try {
-    host = new URL(apiUrl).hostname;
-  } catch {
-    host = '';
-  }
-
-  return { apiUrl, apiKey, host };
-}
-
-function pickFirstString(...candidates) {
-  for (const value of candidates) {
-    if (typeof value === 'string' && value.trim()) {
-      return value.trim();
-    }
-  }
-  return '';
-}
-
-function extractFromMedias(medias) {
-  if (!Array.isArray(medias)) {
-    return { videoUrl: '', audioUrl: '' };
-  }
-
-  let videoUrl = '';
-  let audioUrl = '';
-
-  for (const item of medias) {
-    if (!item || typeof item !== 'object') continue;
-    const url = sanitizeHttpUrl(item.url || item.download_url || item.link);
-    if (!url) continue;
-
-    const type = String(item.type || item.media_type || '').toLowerCase();
-    const ext = String(item.extension || item.ext || item.format || '').toLowerCase();
-
-    if (!audioUrl && (type === 'audio' || ['mp3', 'm4a', 'aac', 'opus'].includes(ext))) {
-      audioUrl = url;
-      continue;
-    }
-
-    if (
-      !videoUrl &&
-      (type === 'video' ||
-        type === '' ||
-        ['mp4', 'webm', 'mov'].includes(ext) ||
-        item.quality ||
-        item.height)
-    ) {
-      videoUrl = url;
-    }
-  }
-
-  if (!videoUrl) {
-    const first = medias.find((item) => isHttpUrl(item?.url));
-    if (first) videoUrl = sanitizeHttpUrl(first.url);
-  }
-
-  return { videoUrl, audioUrl };
-}
-
-function unwrapPayload(raw) {
-  if (!raw || typeof raw !== 'object') return null;
-  if (raw.data && typeof raw.data === 'object' && !Array.isArray(raw.data)) {
-    return raw.data;
-  }
-  if (raw.result && typeof raw.result === 'object') {
-    return raw.result;
-  }
-  if (Array.isArray(raw.data)) {
-    return raw.data.find((item) => item && typeof item === 'object') || null;
-  }
-  return raw;
+  if (typeof value === 'string' && value.trim()) return value.trim();
+  return null;
 }
 
 function looksLikePrivateOrUnsupported(message) {
@@ -191,11 +146,20 @@ function looksLikePrivateOrUnsupported(message) {
     'does not exist',
     'invalid url',
     'invalid link',
+    'no media',
+    'could not',
   ].some((hint) => m.includes(hint));
 }
 
 /**
- * Map third-party provider payloads into the FityVid TikTok response shape.
+ * Map RapidAPI /vid/index payload into FityVid response shape.
+ * Missing values become null.
+ *
+ * Common RapidAPI fields:
+ * - title  <- description[0] | title | desc
+ * - thumbnail <- cover[0] | origin_cover[0] | thumbnail
+ * - videoUrl <- video[0] | play[0] | download_url
+ * - audioUrl <- music[0] | music_url | audio
  */
 export function normalizeTiktokDownloaderResponse(raw) {
   if (!raw || typeof raw !== 'object') {
@@ -207,72 +171,48 @@ export function normalizeTiktokDownloaderResponse(raw) {
   }
 
   if (raw.success === false || raw.status === 'error' || raw.error === true) {
-    const providerMessage = pickFirstString(raw.message, raw.error_message, raw.error);
+    const providerMessage = firstValue(raw.message) || firstValue(raw.error_message) || firstValue(raw.error);
     return {
       success: false,
       statusCode: 400,
       message: looksLikePrivateOrUnsupported(providerMessage)
-        ? 'Unable to process this TikTok link. Private or unsupported videos are not available.'
+        ? 'Unable to process this TikTok link. Private, deleted, or unsupported videos are not available.'
         : sanitizeText(providerMessage, 220) ||
           'Unable to fetch this TikTok video. Please try another public link.',
     };
   }
 
-  const payload = unwrapPayload(raw) || raw;
-  const fromMedias = extractFromMedias(payload.medias || payload.media || raw.medias);
-
   const title = sanitizeText(
-    pickFirstString(
-      payload.title,
-      payload.desc,
-      payload.description,
-      payload.caption,
-      raw.title,
-      'TikTok video',
-    ),
+    firstValue(raw.description) ||
+      firstValue(raw.title) ||
+      firstValue(raw.desc) ||
+      firstValue(raw.caption),
     300,
   );
 
   const thumbnail = sanitizeHttpUrl(
-    pickFirstString(
-      payload.thumbnail,
-      payload.cover,
-      payload.coverUrl,
-      payload.cover_url,
-      payload.origin_cover,
-      payload.dynamic_cover,
-      raw.thumbnail,
-    ),
+    firstValue(raw.cover) ||
+      firstValue(raw.origin_cover) ||
+      firstValue(raw.dynamic_cover) ||
+      firstValue(raw.thumbnail) ||
+      firstValue(raw.coverUrl),
   );
 
   const videoUrl = sanitizeHttpUrl(
-    pickFirstString(
-      payload.videoUrl,
-      payload.video_url,
-      payload.nwm_video_url,
-      payload.play,
-      payload.playAddr,
-      payload.download_url,
-      payload.downloadUrl,
-      payload.hdplay,
-      payload.video,
-      fromMedias.videoUrl,
-      raw.videoUrl,
-      raw.video_url,
-    ),
+    firstValue(raw.video) ||
+      firstValue(raw.play) ||
+      firstValue(raw.nwm_video_url) ||
+      firstValue(raw.download_url) ||
+      firstValue(raw.videoUrl) ||
+      firstValue(raw.hdplay),
   );
 
   const audioUrl = sanitizeHttpUrl(
-    pickFirstString(
-      payload.audioUrl,
-      payload.audio_url,
-      payload.music,
-      payload.music_url,
-      payload.musicUrl,
-      fromMedias.audioUrl,
-      raw.audioUrl,
-      raw.audio_url,
-    ),
+    firstValue(raw.music) ||
+      firstValue(raw.music_url) ||
+      firstValue(raw.audio) ||
+      firstValue(raw.audioUrl) ||
+      firstValue(raw.musicUrl),
   );
 
   if (!videoUrl) {
@@ -280,14 +220,14 @@ export function normalizeTiktokDownloaderResponse(raw) {
       success: false,
       statusCode: 400,
       message:
-        'Unable to process this TikTok link. Private or unsupported videos are not available.',
+        'Unable to process this TikTok link. Private, deleted, or unsupported videos are not available.',
     };
   }
 
   return {
     success: true,
     data: {
-      title: title || 'TikTok video',
+      title,
       thumbnail,
       videoUrl,
       audioUrl,
@@ -296,11 +236,10 @@ export function normalizeTiktokDownloaderResponse(raw) {
 }
 
 function mapHttpError(status, parsed) {
-  const providerMessage = pickFirstString(
-    parsed?.message,
-    parsed?.error_message,
-    typeof parsed?.error === 'string' ? parsed.error : '',
-  );
+  const providerMessage =
+    firstValue(parsed?.message) ||
+    firstValue(parsed?.error_message) ||
+    (typeof parsed?.error === 'string' ? parsed.error : null);
 
   if (status === 429) {
     return {
@@ -331,7 +270,7 @@ function mapHttpError(status, parsed) {
       success: false,
       statusCode: 400,
       message:
-        'Unable to process this TikTok link. Private or unsupported videos are not available.',
+        'Unable to process this TikTok link. Private, deleted, or unsupported videos are not available.',
     };
   }
 
@@ -345,35 +284,34 @@ function mapHttpError(status, parsed) {
 }
 
 /**
- * Call the configured third-party TikTok downloader API.
- * Never logs API keys or raw authorization headers.
+ * Call RapidAPI TikTok downloader.
+ * Never logs API keys or authorization headers.
  */
 export async function fetchTiktokVideoDownload(tiktokUrl) {
   const config = getApiConfig();
   if (!config) {
-    console.error('[tiktok-downloader] missing TIKTOK_DOWNLOADER_API_URL or TIKTOK_DOWNLOADER_API_KEY');
+    console.error('[tiktok-downloader] missing RAPIDAPI_TIKTOK_KEY');
     return {
       success: false,
       statusCode: 503,
       message:
-        'TikTok downloader is not configured. Please set TIKTOK_DOWNLOADER_API_URL and TIKTOK_DOWNLOADER_API_KEY.',
+        'TikTok downloader is not configured. Please set RAPIDAPI_TIKTOK_KEY on the server.',
     };
   }
 
-  const { apiUrl, apiKey, host } = config;
+  const { apiKey, host } = config;
+  const endpoint = new URL(`https://${host}${API_PATH}`);
+  endpoint.searchParams.set('url', tiktokUrl);
 
   let response;
   try {
-    response = await fetch(apiUrl, {
-      method: 'POST',
+    response = await fetch(endpoint.toString(), {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         Accept: 'application/json',
-        'x-rapidapi-key': apiKey,
-        ...(host ? { 'x-rapidapi-host': host } : {}),
-        Authorization: `Bearer ${apiKey}`,
+        'X-RapidAPI-Key': apiKey,
+        'X-RapidAPI-Host': host,
       },
-      body: JSON.stringify({ url: tiktokUrl }),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
   } catch (err) {
@@ -385,7 +323,6 @@ export async function fetchTiktokVideoDownload(tiktokUrl) {
     console.error(
       '[tiktok-downloader] fetch error:',
       timedOut ? 'timeout' : 'network',
-      // Never log secrets — message only, truncated.
       String(err?.message || 'unknown').slice(0, 200),
     );
 
@@ -414,7 +351,6 @@ export async function fetchTiktokVideoDownload(tiktokUrl) {
   if (!response.ok) {
     console.error('[tiktok-downloader] http error', {
       status: response.status,
-      // Avoid dumping full provider payloads that might include tokens.
       keys: parsed && typeof parsed === 'object' ? Object.keys(parsed).slice(0, 12) : [],
     });
     return mapHttpError(response.status, parsed);
