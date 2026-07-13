@@ -13,6 +13,8 @@ import FacebookHashtagGenerator from './pages/FacebookHashtagGenerator';
 import InstagramReelsDownloader from './pages/InstagramReelsDownloader';
 import YoutubeVideoDownloader from './pages/YoutubeVideoDownloader';
 import TiktokVideoDownloader from './pages/TiktokVideoDownloader';
+import TiktokStoryDownloader from './pages/TiktokStoryDownloader';
+import TiktokMp3Downloader from './pages/TiktokMp3Downloader';
 import InstagramVideoDownloader from './pages/InstagramVideoDownloader';
 import FacebookVideoDownloader from './pages/FacebookVideoDownloader';
 import DownloadGuide from './pages/DownloadGuide';
@@ -46,6 +48,8 @@ export default function App() {
         <Route path="/instagram-reels-downloader" element={<InstagramReelsDownloader />} />
         <Route path="/youtube-video-downloader" element={<YoutubeVideoDownloader />} />
         <Route path="/tiktok-video-downloader" element={<TiktokVideoDownloader />} />
+        <Route path="/tiktok-story-downloader" element={<TiktokStoryDownloader />} />
+        <Route path="/tiktok-mp3-downloader" element={<TiktokMp3Downloader />} />
         <Route path="/instagram-video-downloader" element={<InstagramVideoDownloader />} />
         <Route path="/facebook-video-downloader" element={<FacebookVideoDownloader />} />
         <Route path="/download-guide" element={<DownloadGuide />} />

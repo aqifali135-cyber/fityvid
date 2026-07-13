@@ -1,0 +1,133 @@
+/* Shared coming-soon layout for TikTok Story / MP3 placeholder pages */
+
+.ttcs-page {
+  --ttcs-navy: #0f172a;
+  --ttcs-muted: #64748b;
+  --ttcs-purple: #7c3aed;
+  --ttcs-lavender: #f3e8ff;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 4rem 0 4.5rem;
+  background: linear-gradient(180deg, #ffffff 0%, #faf5ff 45%, #ffffff 100%);
+}
+
+.ttcs-page__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ttcs-page__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(56px);
+  opacity: 0.55;
+}
+
+.ttcs-page__orb--left {
+  width: min(280px, 45vw);
+  height: min(280px, 45vw);
+  top: 5%;
+  left: -8%;
+  background: radial-gradient(circle, rgba(196, 181, 253, 0.7) 0%, transparent 72%);
+}
+
+.ttcs-page__orb--right {
+  width: min(260px, 42vw);
+  height: min(260px, 42vw);
+  top: 20%;
+  right: -6%;
+  background: radial-gradient(circle, rgba(251, 207, 232, 0.65) 0%, transparent 72%);
+}
+
+.ttcs-page__inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 640px;
+  text-align: center;
+}
+
+.ttcs-page__badge {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 0.9rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ttcs-purple);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ttcs-page__title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.75rem, 4.2vw, 2.4rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--ttcs-navy);
+}
+
+.ttcs-page__subtitle {
+  margin: 0 0 1.75rem;
+  max-width: 420px;
+  font-size: clamp(1rem, 2.2vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--ttcs-muted);
+}
+
+.ttcs-page__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 1.45rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 45%, #ec4899 100%);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.ttcs-page__btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(124, 58, 237, 0.32);
+  text-decoration: none;
+  color: #ffffff;
+}
+
+.ttcs-page__btn:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .ttcs-page {
+    padding: 3rem 0 3.5rem;
+  }
+
+  .ttcs-page__btn {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ttcs-page__btn,
+  .ttcs-page__btn:hover {
+    transition: none;
+    transform: none;
+  }
+}
