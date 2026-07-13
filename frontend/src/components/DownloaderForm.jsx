@@ -179,6 +179,17 @@ export default function DownloaderForm({ defaultPlatform = null, variant = 'defa
     setManualPlatform(Boolean(defaultPlatform));
   }
 
+  async function handlePasteClick() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text?.trim()) {
+        handleUrlChange(text.trim());
+      }
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
+
   function renderPlatformOptions() {
     return PLATFORMS.map((p) => {
       const isSelected = activePlatform === p.id;
@@ -276,6 +287,26 @@ export default function DownloaderForm({ defaultPlatform = null, variant = 'defa
           </p>
         )}
         <div className={isHero ? 'hero-input-row' : undefined}>
+          {isHero && (
+            <span className="hero-input-row__link-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                <path
+                  d="M10 13a5 5 0 0 0 7.54.54l1.92-1.92a5 5 0 0 0-7.07-7.07L11 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M14 11a5 5 0 0 0-7.54-.54L4.54 12.4a5 5 0 0 0 7.07 7.07L13 18"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+          )}
           <input
             id="video-url"
             type="url"
@@ -290,14 +321,35 @@ export default function DownloaderForm({ defaultPlatform = null, variant = 'defa
             disabled={loading}
           />
           {isHero && (
-            <button type="submit" className="download-submit-button" disabled={loading}>
-              {loading ? 'Please wait…' : 'Get Download Info'}
-              {!loading && (
-                <span className="download-submit-button__arrow" aria-hidden="true">
-                  →
+            <>
+              <button
+                type="button"
+                className="hero-paste-button"
+                onClick={handlePasteClick}
+                disabled={loading}
+              >
+                <span className="hero-paste-button__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                    <rect x="8" y="8" width="11" height="13" rx="2" stroke="currentColor" strokeWidth="2" />
+                    <path
+                      d="M16 8V6a2 2 0 0 0-2-2h-6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
                 </span>
-              )}
-            </button>
+                Paste
+              </button>
+              <button type="submit" className="download-submit-button" disabled={loading}>
+                {loading ? 'Please wait…' : 'Get Download Info'}
+                {!loading && (
+                  <span className="download-submit-button__arrow" aria-hidden="true">
+                    →
+                  </span>
+                )}
+              </button>
+            </>
           )}
         </div>
       </div>

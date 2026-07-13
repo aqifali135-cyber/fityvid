@@ -35,31 +35,66 @@ export default function Home() {
           <span className="hero-bg__shape hero-bg__shape--tl" />
           <span className="hero-bg__shape hero-bg__shape--br" />
           <span className="hero-bg__shape hero-bg__shape--mid" />
-          <span className="hero-bg__dots hero-bg__dots--tr" />
-          <span className="hero-bg__dots hero-bg__dots--bl" />
-          <svg className="hero-bg__curve" viewBox="0 0 420 120" preserveAspectRatio="none" aria-hidden="true">
-            <path
-              d="M10 95 C120 20, 280 110, 410 35"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeDasharray="6 8"
-            />
-          </svg>
+          <span className="hero-bg__orb hero-bg__orb--one" />
+          <span className="hero-bg__orb hero-bg__orb--two" />
         </div>
 
         <div className="container hero-inner">
           <div className="hero-top">
             <div className="hero-copy">
-              <span className="hero-badge">Simple. Fast. Reliable.</span>
+              <span className="hero-badge">
+                <span className="hero-badge__bolt" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                    <path
+                      d="M13 2 4 14h7l-1 8 10-14h-7l0-6z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </span>
+                Simple. Fast. Reliable.
+              </span>
               <h1 className="hero-title">
                 Download Videos
                 <br />
                 in <span className="hero-title__hd">HD</span> Quality
               </h1>
               <p className="hero-subtitle">
-                Download videos from YouTube, TikTok, Instagram, and Facebook quickly and easily.
+                Download videos from YouTube, TikTok, Instagram,
+                <br className="hero-subtitle__break" />
+                and Facebook quickly and easily.
               </p>
+            </div>
+
+            <div className="hero-visual" aria-hidden="true">
+              <span className="hero-visual__ring hero-visual__ring--outer" />
+              <span className="hero-visual__ring hero-visual__ring--mid" />
+              <span className="hero-visual__ring hero-visual__ring--inner" />
+              <span className="hero-visual__dot hero-visual__dot--a" />
+              <span className="hero-visual__dot hero-visual__dot--b" />
+              <span className="hero-visual__dot hero-visual__dot--c" />
+              <div className="hero-visual__card">
+                <span className="hero-visual__circle">
+                  <svg viewBox="0 0 24 24" width="42" height="42" fill="none" aria-hidden="true">
+                    <path
+                      d="M12 4v10m0 0 4-4m-4 4-4-4"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M5 18h14"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </span>
+              </div>
+              <span className="hero-visual__badge">
+                <span className="hero-visual__badge-dot" />
+                Fast Download
+              </span>
             </div>
           </div>
 
