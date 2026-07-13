@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import JsonLd from '../components/JsonLd';
 import DownloaderForm from '../components/DownloaderForm';
-import Logo from '../components/Logo';
 import AdsterraBanner from '../components/AdsterraBanner';
 import AdsterraSquareBanner from '../components/AdsterraSquareBanner';
 import AdsterraFooterBanner from '../components/AdsterraFooterBanner';
@@ -105,96 +104,128 @@ export default function Home() {
       <AdsterraBanner />
 
       <section className="section hashtag-promo">
-        <div className="container">
-          <div className="hashtag-promo-card">
-            <div className="hashtag-promo-card__decor" aria-hidden="true">
-              <span className="hashtag-promo-card__blob hashtag-promo-card__blob--main" />
-              <span className="hashtag-promo-card__dots" />
-              <span className="hashtag-promo-card__spark hashtag-promo-card__spark--one" />
-              <span className="hashtag-promo-card__spark hashtag-promo-card__spark--two" />
+        <div className="hashtag-promo__inner">
+          <header className="hashtag-promo__header">
+            <p className="hashtag-promo__badge">
+              <span aria-hidden="true">✨</span> 100% Free • No Sign Up Required
+            </p>
+            <h2 className="hashtag-promo__title">
+              Free <span className="hashtag-promo__gradient">Hashtag</span> Generator
+            </h2>
+            <p className="hashtag-promo__subtitle">
+              Generate powerful, relevant hashtags for YouTube, TikTok, Instagram, Facebook posts,
+              reels, Shorts, and videos in seconds.
+            </p>
+          </header>
+
+          <div className="hashtag-promo__card">
+            <div className="hashtag-promo__tabs" role="tablist" aria-label="Hashtag generator modes">
+              <span className="hashtag-promo__tab hashtag-promo__tab--active" role="tab" aria-selected="true">
+                <span className="hashtag-promo__tab-icon" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M20 20l-3.5-3.5" strokeLinecap="round" />
+                  </svg>
+                </span>
+                Generate by Keyword
+              </span>
+              <span className="hashtag-promo__tab" role="tab" aria-selected="false">
+                <span className="hashtag-promo__tab-icon" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <circle cx="9" cy="11" r="2" />
+                    <path d="M21 16l-5.5-5.5a2 2 0 0 0-2.8 0L7 17" strokeLinecap="round" />
+                  </svg>
+                </span>
+                Generate by Photo
+              </span>
+              <span className="hashtag-promo__tab" role="tab" aria-selected="false">
+                <span className="hashtag-promo__tab-icon" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M10 13a5 5 0 0 1 7 0" strokeLinecap="round" />
+                    <path d="M14 10V7a2 2 0 1 1 4 0v3" strokeLinecap="round" />
+                    <rect x="3" y="11" width="18" height="10" rx="2" />
+                  </svg>
+                </span>
+                Generate by Post URL
+              </span>
             </div>
 
-            <div className="hashtag-promo-card__grid">
-              <div className="hashtag-promo-card__copy">
-                <div className="hashtag-promo-card__brand">
-                  <Logo size="hero" showText linkToHome={false} />
-                </div>
-                <h2 className="hashtag-promo-card__title">
-                  Free Hashtag
-                  <br />
-                  Generator
-                </h2>
-                <p className="hashtag-promo-card__desc">
-                  Generate hashtags for YouTube, TikTok, Instagram, and Facebook in seconds.
-                </p>
-                <Link to="/hashtag-generator" className="hashtag-promo-cta">
-                  Try Hashtag Generator
-                  <span className="hashtag-promo-cta__arrow" aria-hidden="true">
-                    →
-                  </span>
-                </Link>
-                <p className="hashtag-promo-card__links">
-                  <Link to="/tiktok-hashtag-generator">TikTok hashtags</Link>
-                  <span className="hashtag-promo-card__links-sep" aria-hidden="true">
-                    ·
-                  </span>
-                  <Link to="/instagram-hashtag-generator">Instagram hashtags</Link>
-                  <span className="hashtag-promo-card__links-sep" aria-hidden="true">
-                    ·
-                  </span>
-                  <Link to="/youtube-hashtag-generator">YouTube hashtags</Link>
-                  <span className="hashtag-promo-card__links-sep" aria-hidden="true">
-                    ·
-                  </span>
-                  <Link to="/facebook-hashtag-generator">Facebook hashtags</Link>
-                </p>
-              </div>
+            <div className="hashtag-promo__field">
+              <span className="hashtag-promo__field-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M20 20l-3.5-3.5" strokeLinecap="round" />
+                </svg>
+              </span>
+              <input
+                type="text"
+                className="hashtag-promo__input"
+                placeholder="Example: fitness, workout, home gym, motivation..."
+                readOnly
+                tabIndex={-1}
+                aria-label="Hashtag keyword example"
+              />
+            </div>
 
-              <div className="hashtag-promo-card__visual" aria-hidden="true">
-                <span className="hashtag-pill hashtag-pill--fitness">
-                  <span className="hashtag-pill__icon hashtag-pill__icon--purple">
-                    <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
-                      <path
-                        fill="currentColor"
-                        d="M6.5 6a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0zm6 0a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0zM4 11h2v7H4v-7zm14 0h2v7h-2v-7zM9 11h6v2H9v-2z"
-                      />
-                    </svg>
-                  </span>
-                  #fitness
-                </span>
-                <span className="hashtag-pill hashtag-pill--travel">
-                  <span className="hashtag-pill__icon hashtag-pill__icon--blue">
-                    <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
-                      <path
-                        fill="currentColor"
-                        d="M2.5 19l1.5-5.5L12 3l8 10.5L21.5 19H2.5zm3.2-2h12.6l-1-3.7L12 6.5 6.2 13.3l-.5 3.7z"
-                      />
-                    </svg>
-                  </span>
-                  #travel
-                </span>
-                <span className="hashtag-pill hashtag-pill--cooking">
-                  <span className="hashtag-pill__icon hashtag-pill__icon--pink">
-                    <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
-                      <path
-                        fill="currentColor"
-                        d="M12 3c-2.2 0-4 1.6-4 3.6 0 .9.3 1.7.8 2.4L4 22h16l-4.8-13c.5-.7.8-1.5.8-2.4C16 4.6 14.2 3 12 3z"
-                      />
-                    </svg>
-                  </span>
-                  #cooking
-                </span>
-                <span className="hashtag-pill hashtag-pill--gaming">
-                  <span className="hashtag-pill__icon hashtag-pill__icon--lavender">
-                    <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
-                      <path
-                        fill="currentColor"
-                        d="M6 9H4V7h2v2zm0 4H4v-2h2v2zm4-7H8V4h2v2zm0 14h-2v-2h2v2zm4-14h-2V4h2v2zm6 7h-2V7h2v2zm-2 4h2v2h-2v-2zM8 11h8v2H8v-2z"
-                      />
-                    </svg>
-                  </span>
-                  #gaming
-                </span>
+            <Link to="/hashtag-generator" className="hashtag-promo__cta">
+              <span aria-hidden="true">✨</span>
+              Generate Hashtags
+              <span className="hashtag-promo__cta-arrow" aria-hidden="true">
+                →
+              </span>
+            </Link>
+          </div>
+
+          <div className="hashtag-promo__features" aria-label="Hashtag generator benefits">
+            <div className="hashtag-promo__feature">
+              <div className="hashtag-promo__feature-icon hashtag-promo__feature-icon--purple" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 9h16M4 15h10" strokeLinecap="round" />
+                  <path d="M10 5v14" strokeLinecap="round" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="hashtag-promo__feature-title">Relevant Hashtags</h3>
+                <p className="hashtag-promo__feature-text">Get highly relevant and trending hashtags.</p>
+              </div>
+            </div>
+            <div className="hashtag-promo__feature">
+              <span className="hashtag-promo__feature-divider" aria-hidden="true" />
+              <div className="hashtag-promo__feature-icon hashtag-promo__feature-icon--blue" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 17l6-6 4 4 6-8" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M14 7h6v6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="hashtag-promo__feature-title">Boost Engagement</h3>
+                <p className="hashtag-promo__feature-text">Increase reach, views, and engagement.</p>
+              </div>
+            </div>
+            <div className="hashtag-promo__feature">
+              <span className="hashtag-promo__feature-divider" aria-hidden="true" />
+              <div className="hashtag-promo__feature-icon hashtag-promo__feature-icon--pink" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M13 2L4 14h7l-1 8 10-14h-7l0-6z" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="hashtag-promo__feature-title">Save Time</h3>
+                <p className="hashtag-promo__feature-text">Generate hashtags in seconds, not minutes.</p>
+              </div>
+            </div>
+            <div className="hashtag-promo__feature">
+              <span className="hashtag-promo__feature-divider" aria-hidden="true" />
+              <div className="hashtag-promo__feature-icon hashtag-promo__feature-icon--green" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 3l7 4v5c0 5-3.5 8.5-7 9-3.5-.5-7-4-7-9V7l7-4z" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="hashtag-promo__feature-title">100% Free</h3>
+                <p className="hashtag-promo__feature-text">No sign up required. Unlimited usage.</p>
               </div>
             </div>
           </div>

@@ -273,328 +273,345 @@
 
 /* Free Hashtag Generator promo — homepage section only */
 .hashtag-promo {
-  padding-top: 2.5rem;
-  padding-bottom: 2.5rem;
+  padding: 3rem 1.25rem 3.25rem;
+  background: linear-gradient(180deg, #faf8ff 0%, #fdfcff 45%, #f8fbff 100%);
 }
 
-.hashtag-promo-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 32px;
-  background:
-    radial-gradient(circle at 80% 45%, rgba(244, 186, 255, 0.24), transparent 32%),
-    radial-gradient(circle at 70% 70%, rgba(155, 209, 255, 0.24), transparent 36%),
-    rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(183, 204, 255, 0.45);
-  box-shadow: 0 20px 55px rgba(80, 72, 160, 0.1);
+.hashtag-promo__inner {
+  width: min(920px, 100%);
+  margin: 0 auto;
 }
 
-.hashtag-promo-card__decor {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
+.hashtag-promo__header {
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
 
-.hashtag-promo-card__blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(48px);
-  opacity: 0.65;
-}
-
-.hashtag-promo-card__blob--main {
-  width: min(360px, 52vw);
-  height: min(360px, 52vw);
-  top: 8%;
-  right: 4%;
-  background: radial-gradient(
-    circle,
-    rgba(196, 181, 253, 0.45) 0%,
-    rgba(249, 168, 212, 0.28) 45%,
-    transparent 72%
-  );
-}
-
-.hashtag-promo-card__dots {
-  position: absolute;
-  top: 10%;
-  right: 6%;
-  width: 72px;
-  height: 56px;
-  background-image: radial-gradient(rgba(148, 163, 184, 0.28) 1.4px, transparent 1.4px);
-  background-size: 9px 9px;
-  opacity: 0.55;
-}
-
-.hashtag-promo-card__spark {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  background: linear-gradient(135deg, #c4b5fd 0%, #f9a8d4 100%);
-  clip-path: polygon(50% 0%, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0% 50%, 38% 38%);
-  opacity: 0.75;
-}
-
-.hashtag-promo-card__spark--one {
-  top: 18%;
-  right: 22%;
-}
-
-.hashtag-promo-card__spark--two {
-  top: 42%;
-  right: 10%;
-  width: 10px;
-  height: 10px;
-  opacity: 0.55;
-}
-
-.hashtag-promo-card__grid {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 2.5rem;
+.hashtag-promo__badge {
+  display: inline-flex;
   align-items: center;
-  padding: 2.75rem 2.5rem;
+  gap: 0.35rem;
+  margin: 0 0 0.95rem;
+  padding: 0.42rem 0.95rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(237, 233, 254, 0.95), rgba(245, 208, 254, 0.85));
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  color: #7c3aed;
+  font-size: 0.84rem;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.08);
 }
 
-.hashtag-promo-card__copy {
-  max-width: 520px;
-}
-
-.hashtag-promo-card__brand {
-  margin-bottom: 1.25rem;
-}
-
-.hashtag-promo-card__title {
-  margin: 0 0 1rem;
-  font-size: clamp(2.25rem, 5vw, 3.75rem);
+.hashtag-promo__title {
+  margin: 0 0 0.7rem;
+  font-size: clamp(1.9rem, 4.5vw, 2.75rem);
   font-weight: 800;
-  line-height: 1.08;
   letter-spacing: -0.03em;
+  line-height: 1.1;
   color: #0f172a;
 }
 
-.hashtag-promo-card__desc {
-  margin: 0 0 1.5rem;
-  max-width: 460px;
-  font-size: clamp(1rem, 2.2vw, 1.15rem);
+.hashtag-promo__gradient {
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 48%, #6366f1 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hashtag-promo__subtitle {
+  margin: 0 auto;
+  max-width: 680px;
+  font-size: clamp(0.95rem, 2vw, 1.05rem);
   line-height: 1.65;
   color: #64748b;
 }
 
-.hashtag-promo-cta {
+.hashtag-promo__card {
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 28px;
+  box-shadow:
+    0 20px 50px rgba(124, 58, 237, 0.08),
+    0 6px 18px rgba(15, 23, 42, 0.04);
+  padding: 1.15rem 1.25rem 1.4rem;
+}
+
+.hashtag-promo__tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.1rem;
+  padding: 0.3rem;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.hashtag-promo__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.hashtag-promo__tab {
+  position: relative;
+  flex: 1 1 0;
+  min-width: max-content;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 1.05rem 1.85rem;
-  border-radius: 16px;
-  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 52%, #ec4899 100%);
-  color: #ffffff;
+  gap: 0.45rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hashtag-promo__tab:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 22%;
+  bottom: 22%;
+  width: 1px;
+  background: #e2e8f0;
+}
+
+.hashtag-promo__tab--active {
+  color: #7c3aed;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+}
+
+.hashtag-promo__tab--active::after,
+.hashtag-promo__tab--active + .hashtag-promo__tab::after {
+  opacity: 0;
+}
+
+.hashtag-promo__tab-icon {
+  display: inline-flex;
+  color: #94a3b8;
+}
+
+.hashtag-promo__tab--active .hashtag-promo__tab-icon {
+  color: #7c3aed;
+}
+
+.hashtag-promo__field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 56px;
+  margin-bottom: 1rem;
+  padding: 0 1.1rem;
+  border: 1.5px solid #e9d5ff;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.hashtag-promo__field-icon {
+  display: inline-flex;
+  color: #a78bfa;
+  flex-shrink: 0;
+}
+
+.hashtag-promo__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 0.75rem 0;
+  font-family: inherit;
+  font-size: 0.98rem;
+  color: #0f172a;
+  outline: none;
+  cursor: default;
+}
+
+.hashtag-promo__input::placeholder {
+  color: #94a3b8;
+}
+
+.hashtag-promo__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: min(380px, 100%);
+  min-height: 56px;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 55%, #f472b6 100%);
+  color: #fff;
   font-size: 1rem;
   font-weight: 700;
   text-decoration: none;
-  box-shadow: 0 12px 28px rgba(139, 92, 246, 0.25);
+  box-shadow:
+    0 12px 30px rgba(236, 72, 153, 0.24),
+    0 4px 12px rgba(139, 92, 246, 0.18);
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
 }
 
-.hashtag-promo-cta:hover {
+.hashtag-promo__cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 34px rgba(139, 92, 246, 0.3);
+  filter: brightness(1.03);
+  color: #fff;
   text-decoration: none;
-  color: #ffffff;
+  box-shadow:
+    0 14px 34px rgba(236, 72, 153, 0.3),
+    0 6px 16px rgba(139, 92, 246, 0.22);
 }
 
-.hashtag-promo-cta:focus-visible {
-  outline: 2px solid #818cf8;
+.hashtag-promo__cta:focus-visible {
+  outline: 2px solid #a78bfa;
   outline-offset: 3px;
 }
 
-.hashtag-promo-cta__arrow {
+.hashtag-promo__cta-arrow {
   font-size: 1.1rem;
   line-height: 1;
 }
 
-.hashtag-promo-card__links {
-  margin: 1.1rem 0 0;
-  font-size: 0.92rem;
-  line-height: 1.6;
+.hashtag-promo__features {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 1.15rem;
+  padding: 1.1rem 0.75rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.05);
 }
 
-.hashtag-promo-card__links a {
-  color: #2563eb;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.hashtag-promo-card__links a:hover {
-  text-decoration: underline;
-}
-
-.hashtag-promo-card__links-sep {
-  margin: 0 0.35rem;
-  color: #94a3b8;
-}
-
-.hashtag-promo-card__visual {
+.hashtag-promo__feature {
   position: relative;
-  min-height: 300px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.25rem 0.75rem;
 }
 
-.hashtag-pill {
+.hashtag-promo__feature-divider {
   position: absolute;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 24px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 14px 30px rgba(85, 72, 160, 0.14);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #0f172a;
-  white-space: nowrap;
+  left: 0;
+  top: 12%;
+  bottom: 12%;
+  width: 1px;
+  background: #e2e8f0;
 }
 
-.hashtag-pill__icon {
+.hashtag-promo__feature-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
   flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
 }
 
-.hashtag-pill__icon--purple {
-  color: #8b5cf6;
-  background: rgba(237, 233, 254, 0.95);
-}
-
-.hashtag-pill__icon--blue {
-  color: #3b82f6;
-  background: rgba(219, 234, 254, 0.95);
-}
-
-.hashtag-pill__icon--pink {
-  color: #ec4899;
-  background: rgba(252, 231, 243, 0.95);
-}
-
-.hashtag-pill__icon--lavender {
+.hashtag-promo__feature-icon--purple {
+  background: #f3e8ff;
   color: #7c3aed;
-  background: rgba(237, 233, 254, 0.95);
 }
 
-.hashtag-pill--fitness {
-  top: 8%;
-  left: 4%;
+.hashtag-promo__feature-icon--blue {
+  background: #dbeafe;
+  color: #2563eb;
 }
 
-.hashtag-pill--travel {
-  top: 4%;
-  right: 2%;
+.hashtag-promo__feature-icon--pink {
+  background: #fce7f3;
+  color: #db2777;
 }
 
-.hashtag-pill--cooking {
-  bottom: 22%;
-  left: 0;
+.hashtag-promo__feature-icon--green {
+  background: #dcfce7;
+  color: #16a34a;
 }
 
-.hashtag-pill--gaming {
-  bottom: 10%;
-  right: 0;
+.hashtag-promo__feature-title {
+  margin: 0 0 0.15rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.hashtag-promo__feature-text {
+  margin: 0;
+  font-size: 0.76rem;
+  color: #64748b;
+  line-height: 1.4;
 }
 
 @media (max-width: 900px) {
-  .hashtag-promo-card__grid {
-    gap: 1.75rem;
-    padding: 2rem 1.75rem;
+  .hashtag-promo__features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem 0.35rem;
   }
 
-  .hashtag-promo-card__visual {
-    min-height: 260px;
-  }
-}
-
-@media (max-width: 768px) {
-  .hashtag-promo-card__grid {
-    grid-template-columns: 1fr;
-    padding: 1.75rem 1.35rem;
-  }
-
-  .hashtag-promo-card__copy {
-    max-width: none;
-    text-align: center;
-  }
-
-  .hashtag-promo-card__brand {
-    display: flex;
-    justify-content: center;
-  }
-
-  .hashtag-promo-card__desc {
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .hashtag-promo-cta {
-    width: 100%;
-    max-width: 360px;
-  }
-
-  .hashtag-promo-card__copy {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .hashtag-promo-card__visual {
-    min-height: 240px;
-    max-width: 360px;
-    margin: 0 auto;
-    width: 100%;
+  .hashtag-promo__feature-divider {
+    display: none;
   }
 }
 
 @media (max-width: 640px) {
   .hashtag-promo {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+    padding: 2.25rem 1rem 2.5rem;
   }
 
-  .hashtag-promo-card {
-    border-radius: 24px;
+  .hashtag-promo__card {
+    border-radius: 22px;
+    padding: 1rem;
   }
 
-  .hashtag-promo-card__title {
-    font-size: clamp(2rem, 9vw, 2.5rem);
+  .hashtag-promo__tabs {
+    margin-bottom: 0.95rem;
   }
 
-  .hashtag-promo-cta {
+  .hashtag-promo__tab {
+    font-size: 0.76rem;
+    padding: 0.7rem 0.75rem;
+  }
+
+  .hashtag-promo__tab:not(:last-child)::after {
+    display: none;
+  }
+
+  .hashtag-promo__field {
+    min-height: 52px;
+  }
+
+  .hashtag-promo__cta {
     width: 100%;
-    max-width: none;
+    min-height: 52px;
+    font-size: 0.95rem;
   }
 
-  .hashtag-pill {
-    padding: 14px 18px;
-    font-size: 0.88rem;
+  .hashtag-promo__features {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 0.95rem;
+  }
+
+  .hashtag-promo__feature {
+    padding: 0.15rem 0.25rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hashtag-promo-cta {
-    transition: box-shadow 0.2s ease;
+  .hashtag-promo__cta {
+    transition: none;
   }
 
-  .hashtag-promo-cta:hover {
+  .hashtag-promo__cta:hover {
     transform: none;
   }
 }
