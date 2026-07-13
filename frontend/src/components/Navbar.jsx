@@ -8,6 +8,7 @@ const links = [
   { to: '/', label: 'Home', icon: 'home' },
   { to: '/how-it-works', label: 'How It Works', icon: 'how' },
   { to: '/platforms', label: 'Platforms', icon: 'platforms' },
+  { to: '/tiktok-video-downloader', label: 'TikTok Downloader', icon: 'tiktok' },
   { to: '/hashtag-generator', label: 'Hashtag Generator', icon: 'hashtag' },
   { to: '/stylish-text-generator', label: 'Stylish Text', icon: 'text' },
   { to: '/pricing', label: 'Pricing', icon: 'pricing' },
@@ -47,6 +48,14 @@ function NavIcon({ name }) {
           <rect x="3" y="5" width="18" height="12" rx="2" />
           <path d="M8 21h8" />
           <path d="M12 17v4" />
+        </svg>
+      );
+    case 'tiktok':
+      return (
+        <svg {...props}>
+          <path d="M12 3v12" />
+          <path d="m7 10 5 5 5-5" />
+          <path d="M5 19h14" />
         </svg>
       );
     case 'hashtag':
