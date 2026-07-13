@@ -1,27 +1,79 @@
 import { Link } from 'react-router-dom';
 import PlatformCardIcon from './PlatformCardIcon';
-import {
-  PLATFORMS_PAGE,
-  PLATFORM_DISCLAIMERS,
-  PLATFORM_ALT,
-} from '../constants/platforms';
+import { PLATFORM_ICONS, PLATFORM_ALT } from '../constants/platforms';
 import './SupportedPlatformsSection.css';
 
 const NOTICE_TEXT =
   'FityVid only supports publicly accessible content. Please download only your own content or content you have permission to use. Private videos are not supported.';
 
-const AFFILIATION_TEXT =
-  'FityVid is not affiliated with YouTube, TikTok, Instagram, Facebook, Google, ByteDance, or Meta.';
+const DOWNLOADER_ITEMS = [
+  'Public videos only',
+  'You must have permission',
+  'Not affiliated with this platform',
+];
+
+const TOOLS = [
+  {
+    id: 'youtube',
+    title: 'YouTube Video Downloader',
+    desc: 'Download public YouTube videos when you have permission to use the content.',
+    items: DOWNLOADER_ITEMS,
+    to: '/youtube-video-downloader',
+    iconType: 'image',
+    icon: PLATFORM_ICONS.youtube,
+    alt: PLATFORM_ALT.youtube,
+  },
+  {
+    id: 'tiktok',
+    title: 'TikTok Video Downloader',
+    desc: 'Process publicly accessible TikTok video links only.',
+    items: DOWNLOADER_ITEMS,
+    to: '/tiktok-video-downloader',
+    iconType: 'image',
+    icon: PLATFORM_ICONS.tiktok,
+    alt: PLATFORM_ALT.tiktok,
+  },
+  {
+    id: 'instagram',
+    title: 'Instagram Video Downloader',
+    desc: 'For public Instagram posts and reels you are allowed to download.',
+    items: DOWNLOADER_ITEMS,
+    to: '/instagram-video-downloader',
+    iconType: 'image',
+    icon: PLATFORM_ICONS.instagram,
+    alt: PLATFORM_ALT.instagram,
+  },
+  {
+    id: 'facebook',
+    title: 'Facebook Video Downloader',
+    desc: 'Supports public Facebook video links with proper user permission.',
+    items: DOWNLOADER_ITEMS,
+    to: '/facebook-video-downloader',
+    iconType: 'image',
+    icon: PLATFORM_ICONS.facebook,
+    alt: PLATFORM_ALT.facebook,
+  },
+  {
+    id: 'hashtag',
+    title: 'Hashtag Generator',
+    desc: 'Generate powerful, relevant hashtags for your content.',
+    items: ['100% Free to use', 'No sign up required', 'Boost your reach & engagement'],
+    to: '/hashtag-generator',
+    iconType: 'hashtag',
+  },
+  {
+    id: 'stylish',
+    title: 'Stylish Text Generator',
+    desc: 'Create stylish and unique text for your bio, captions and posts.',
+    items: ['100% Free to use', 'No sign up required', 'Copy & use anywhere'],
+    to: '/stylish-text-generator',
+    iconType: 'stylish',
+  },
+];
 
 function CheckIcon({ className }) {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 16 16"
-      width={16}
-      height={16}
-      aria-hidden="true"
-    >
+    <svg className={className} viewBox="0 0 16 16" width={14} height={14} aria-hidden="true">
       <path
         fill="currentColor"
         d="M6.2 11.4 3.4 8.6l-.9.9 3.7 3.7 7.4-7.4-.9-.9-6.5 6.5z"
@@ -30,9 +82,25 @@ function CheckIcon({ className }) {
   );
 }
 
+function HashtagToolIcon() {
+  return (
+    <span className="sp-card__tool-icon sp-card__tool-icon--hashtag" aria-hidden="true">
+      #
+    </span>
+  );
+}
+
+function StylishToolIcon() {
+  return (
+    <span className="sp-card__tool-icon sp-card__tool-icon--stylish" aria-hidden="true">
+      Aa
+    </span>
+  );
+}
+
 function DownloadIcon() {
   return (
-    <svg viewBox="0 0 20 20" width={20} height={20} aria-hidden="true">
+    <svg viewBox="0 0 20 20" width={18} height={18} aria-hidden="true">
       <path
         fill="currentColor"
         d="M10 2a1 1 0 0 1 1 1v7.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42L9 10.59V3a1 1 0 0 1 1-1z"
@@ -51,31 +119,21 @@ export default function SupportedPlatformsSection() {
       <div className="sp-section__bg" aria-hidden="true">
         <span className="sp-section__orb sp-section__orb--left" />
         <span className="sp-section__orb sp-section__orb--right" />
-        <span className="sp-section__wave sp-section__wave--one" />
-        <span className="sp-section__wave sp-section__wave--two" />
+        <span className="sp-section__orb sp-section__orb--mint" />
+        <span className="sp-section__dots" />
       </div>
 
       <div className="container sp-section__inner">
-        <span className="sp-section__badge">
-          <svg className="sp-section__badge-icon" viewBox="0 0 16 16" width={14} height={14} aria-hidden="true">
-            <path
-              fill="currentColor"
-              d="M8 1.5l1.1 2.4 2.6.4-1.9 1.8.4 2.6L8 7.6 5.8 8.7l.4-2.6L4.3 4.3l2.6-.4L8 1.5z"
-            />
-          </svg>
-          Supported Platforms
-        </span>
-
         <h2 id="sp-section-title" className="sp-section__title">
-          Supported Platforms
+          Supported <span className="sp-section__title-gradient">Platforms &amp; Tools</span>
         </h2>
         <p className="sp-section__subtitle">
-          FityVid focuses on these four platforms only.
+          FityVid focuses on these platforms and tools only.
         </p>
 
         <div className="sp-section__notice" role="note">
           <span className="sp-section__notice-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width={22} height={22}>
+            <svg viewBox="0 0 24 24" width={18} height={18}>
               <path
                 fill="currentColor"
                 d="M12 2 4 5v6c0 5.25 3.4 10.15 8 11 4.6-.85 8-5.75 8-11V5l-8-3zm-1 14-3-3 1.4-1.4L11 13.2l4.6-4.6L17 10l-6 6z"
@@ -86,35 +144,40 @@ export default function SupportedPlatformsSection() {
         </div>
 
         <div className="sp-section__grid">
-          {PLATFORMS_PAGE.map((platform) => (
-            <article
-              key={platform.id}
-              className={`sp-card sp-card--${platform.id}`}
+          {TOOLS.map((tool) => (
+            <Link
+              key={tool.id}
+              to={tool.to}
+              className={`sp-card sp-card--${tool.id}`}
             >
               <div className="sp-card__icon-wrap">
-                <PlatformCardIcon
-                  src={platform.icon}
-                  label={platform.shortName}
-                  alt={PLATFORM_ALT[platform.id]}
-                  iconBox
-                />
+                {tool.iconType === 'image' ? (
+                  <PlatformCardIcon
+                    src={tool.icon}
+                    label={tool.title}
+                    alt={tool.alt}
+                    iconBox
+                  />
+                ) : tool.iconType === 'hashtag' ? (
+                  <HashtagToolIcon />
+                ) : (
+                  <StylishToolIcon />
+                )}
               </div>
-              <h3 className="sp-card__title">{platform.name}</h3>
-              <p className="sp-card__desc">{platform.desc}</p>
+              <h3 className="sp-card__title">{tool.title}</h3>
+              <p className="sp-card__desc">{tool.desc}</p>
               <hr className="sp-card__divider" />
               <ul className="sp-card__list">
-                {PLATFORM_DISCLAIMERS.map((item) => (
+                {tool.items.map((item) => (
                   <li key={item}>
                     <CheckIcon className="sp-card__check" />
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
-            </article>
+            </Link>
           ))}
         </div>
-
-        <p className="sp-section__affiliation">{AFFILIATION_TEXT}</p>
 
         <div className="sp-section__cta-wrap">
           <Link to="/download-guide" className="sp-section__cta">
