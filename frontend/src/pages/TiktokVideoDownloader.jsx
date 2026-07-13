@@ -120,6 +120,17 @@ export default function TiktokVideoDownloader() {
       <JsonLd data={[webApplicationSchema, faqPageSchema(FAQ_ITEMS)]} />
 
       <div className="ttd-page">
+        <nav className="ttd-subnav" aria-label="TikTok downloader tools">
+          <div className="container ttd-subnav__inner">
+            <Link to="/tiktok-story-downloader" className="ttd-subnav__link">
+              Download TikTok Stories
+            </Link>
+            <Link to="/tiktok-mp3-downloader" className="ttd-subnav__link">
+              Download TikTok MP3
+            </Link>
+          </div>
+        </nav>
+
         <section className="ttd-hero" aria-labelledby="ttd-hero-title">
           <div className="ttd-hero__bg" aria-hidden="true">
             <span className="ttd-hero__orb ttd-hero__orb--left" />
